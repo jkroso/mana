@@ -1,0 +1,26 @@
+{
+  "name": "mana",
+  "version": "0.0.0",
+  "description": "A virtual dom based framework which is as pretty as possible",
+  "keywords": ["virtual dom","framework","UI"],
+  "dependencies": {
+    "cursor": "jsiom/cursor",
+    "cell": "jkroso/cell",
+    "domready": "1"
+  },
+  "devDependencies": {
+    "assert": "jkroso/assert",
+    "serve": "jkroso/serve",
+    "hydro-html": "*",
+    "hydro-bdd": "*",
+    "babelify": "*",
+    "hydro": "*"
+  },
+  "browserify": {
+    "transform": [["babelify", {"jsxPragma": "JSX","stage":0}]]
+  },
+  "repository": "git://github.com/jkroso/mana.git",
+  "author": "Jake Rosoman",
+  "files": ["index.js", "app.js"],
+  "license": "MIT"
+}

@@ -1,0 +1,24 @@
+<title>Mana tests</title>
+<link rel="stylesheet" href="../node_modules/hydro-html/index.css">
+
+<div id="hydro"></div>
+
+<script>
+  var Hydro = require('hydro')
+  var hydro = new Hydro
+
+  hydro.set({
+    formatter: require('hydro-html'),
+    timeout: 500,
+    plugins: [require('hydro-bdd')],
+    globals: {
+      assert: require('assert/')
+    }
+  })
+
+  hydro.setup()
+
+  require('./mana.test')
+
+  hydro.run()
+</script>
