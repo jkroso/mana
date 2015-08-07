@@ -23,14 +23,12 @@ class Text extends Node {
     this.text = String(text)
   }
   toDOM() {
-    this.dom = document.createTextNode(this.text)
-    this.dom[NODE] = this
-    return this.dom
+    return this.dom = document.createTextNode(this.text)
   }
   update(next) {
     if (easyUpdate(this, next)) return next
     if (this.text != next.text) this.dom.nodeValue = next.text
-    linkNodes(this.dom, next)
+    next.dom = this.dom
     return next
   }
 }
