@@ -229,13 +229,48 @@ createElement.line =
 createElement.rect =
 createElement.g = createSVG
 
+// Hmm this is getting a bit long
 const attrWhiteList = [
   'align', 'alt', 'bgcolor', 'border', 'char', 'charoff', 'charset', 'cite', 'compact', 'disabled',
   'height', 'href', 'hspace', 'longdesc', 'name', 'size', 'src', 'target', 'type', 'valign',
   'value', 'vspace', 'width', 'abbr', 'axis', 'colspan', 'nowrap', 'rowspan', 'scope', 'label',
   'readonly', 'cols', 'rows', 'accept', 'span', 'accept-charset', 'action', 'enctype', 'method',
   'checked', 'maxlength', 'for', 'start', 'selected', 'multiple', 'cellpadding', 'cellspacing',
-  'frame', 'rules', 'summary', 'headers', 'autofocus', 'id', "className", "placeholder"
+  'frame', 'rules', 'summary', 'headers', 'autofocus', 'id', "className", "placeholder",
+  "accentHeight", "accumulate", "additive", "alphabetic", "amplitude", "arabicForm", "ascent",
+  "attributeName", "attributeType", "azimuth", "baseFrequency", "baseProfile", "bbox", "begin",
+  "bias", "by", "calcMode", "capHeight", "clipPathUnits", "contentScriptType", "contentStyleType",
+  "cx", "cy", "d", "descent", "diffuseConstant", "divisor", "dur", "dx", "dy", "edgeMode",
+  "elevation", "end", "exponent", "externalResourcesRequired", "fill", "filterRes", "filterUnits",
+  "fontFamily", "fontSize", "fontStretch", "fontStyle", "format", "from", "fx", "fy", "g1", "g2",
+  "glyphame", "glyphRef", "gradientTransform", "gradientUnits", "hanging", "horizAdvX",
+  "horizOriginX", "horizOriginY", "ideographic", "in", "in2", "intercept", "k", "k1", "k2", "k3",
+  "k4", "kernelMatrix", "kernelUnitLength", "keyPoints", "keySplines", "keyTimes", "lang",
+  "lengthAdjust", "limitingConeAngle", "local", "markerHeight", "markerUnits", "markerWidth",
+  "maskContentUnits", "maskUnits", "mathematical", "max", "media", "method", "min", "mode",
+  "numOctaves", "offset", "operator", "order", "orient", "orientation", "origin",
+  "overlinePosition", "overlineThickness", "panose1", "path", "pathLength", "patternContentUnits",
+  "patternTransform", "patternUnits", "points", "pointsAtX", "pointsAtY", "pointsAtZ",
+  "preserveAlpha", "preserveAspectRatio", "primitiveUnits", "r", "radius", "refX", "refY",
+  "renderingIntent", "repeatCount", "repeatDur", "requiredExtensions", "requiredFeatures",
+  "restart", "result", "rotate", "rx", "ry", "scale", "seed", "slope", "spacing",
+  "specularConstant", "specularExponent", "spreadMethod", "startOffset", "stdDeviation", "stemh",
+  "stemv", "stitchTiles", "strikethroughPosition", "strikethroughThickness", "string", "style",
+  "surfaceScale", "systemLanguage", "tableValues", "target", "targetX", "targetY", "textLength",
+  "title", "to", "transform", "type", "u1", "u2", "underlinePosition", "underlineThickness",
+  "unicode", "unicodeRange", "unitsPerEm", "vAlphabetic", "vHanging", "vIdeographic",
+  "vMathematical", "values", "version", "vertAdvY", "vertOriginX", "vertOriginY", "viewBox",
+  "viewTarget", "widths", "x", "xHeight", "x1", "x2", "xChannelSelector", "xlink", "xml", "y", "y1",
+  "y2", "yChannelSelector", "z", "zoomAndPan", "alignmentBaseline", "baselineShift", "clipPath",
+  "clipRule", "clip", "colorInterpolationFilters", "colorInterpolation", "colorProfile",
+  "colorRendering", "color", "direction", "display", "dominantBaseline", "enableBackground",
+  "fillOpacity", "fillRule", "filter", "floodColor", "floodOpacity", "fontSizeAdjust",
+  "fontVariant", "fontWeight", "glyphOrientationHorizontal", "glyphOrientationVertical",
+  "imageRendering", "kerning", "letterSpacing", "lightingColor", "markerEnd", "markerMid",
+  "markerStart", "mask", "opacity", "overflow", "pointerEvents", "shapeRendering", "stopColor",
+  "stopOpacity", "strokeDasharray", "strokeDashoffset", "strokeLinecap", "strokeLinejoin",
+  "strokeMiterlimit", "strokeOpacity", "strokeWidth", "stroke", "textAnchor", "textDecoration",
+  "textRendering", "unicodeBidi", "visibility", "wordSpacing", "writingMode"
 ].reduce((o,k) => {o[k] = true; return o}, {})
 
 /**
