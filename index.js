@@ -63,6 +63,7 @@ class Element extends Node {
         params[key] = value
       }
     }
+    return this
   }
 
   /**
