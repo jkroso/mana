@@ -95,6 +95,7 @@ class Element extends Node {
       ? ((previous, next) => {
           return function(event){
             previous.call(this, event)
+            if (event.cancelBubble) return
             next.call(this, event)
           }
         })(this.events[type], fn)
