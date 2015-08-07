@@ -1,6 +1,6 @@
+const Cursor = require('cursor/soft')
 const domready = require('domready')
 const assert = require('assert')
-const Cursor = require('cursor')
 const Atom = require('cell')
 const {NODE} = require('./')
 
