@@ -289,7 +289,7 @@ const setAttribute = (el, key, value) => {
   } else if (key == 'value') {
     // often value has already updated itself
     if (el.value != value) el.value = value
-  } else if (key == 'className') {
+  } else if (key == 'className' && typeof el.className == 'string') {
     el.className = value // chrome bug
   } else if (key in attrWhiteList) {
     if (typeof value == 'boolean') el[key] = value
