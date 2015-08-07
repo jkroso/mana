@@ -1,12 +1,17 @@
-const call = Function.call
+const tmp = document.createElement('div')
 const NODE = Symbol('node')
+const call = Function.call
 
 class Node {
   remove() {
     this.dom.parentNode.removeChild(this.dom)
   }
   replace(next) {
-    this.dom.parentElement.replaceChild(next.toDOM(), this.dom)
+    const parent = this.dom.parentElement
+    // In case toDOM() results in this.dom being assigned a new parentNode
+    // This can happen when re-using parts of the virtual DOM between renders
+    parent.replaceChild(tmp, this.dom)
+    parent.replaceChild(next.toDOM(), tmp)
     return next
   }
 }
