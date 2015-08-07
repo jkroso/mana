@@ -213,12 +213,6 @@ const createElement = {
     el.setAttribute('height', '100%')
     el.setAttribute('width', '100%')
     return el
-  },
-  path() {
-    var el = createSVG('path')
-    el.setAttribute('stroke', 'black')
-    el.setAttribute('fill', 'none')
-    return el
   }
 }
 
@@ -229,6 +223,7 @@ createElement.circle =
 createElement.text =
 createElement.line =
 createElement.rect =
+createElement.path =
 createElement.g = createSVG
 
 // Hmm this is getting a bit long
