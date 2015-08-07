@@ -316,6 +316,7 @@ const JSX = (Type, params, ...children) => {
 }
 
 const toNodes = (nodes, val) => {
+  if (val == null) return nodes
   if (Array.isArray(val)) nodes.push(...val.reduce(toNodes, []))
   else if (typeof val != 'object') nodes.push(new Text(val))
   else nodes.push(val)
