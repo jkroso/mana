@@ -59,6 +59,8 @@ class Element extends Node {
             ? params.className + ' ' + key
             : key
         }
+      } else if (key == 'style' && typeof value == 'string') {
+        params.style = parseCSSText(value)
       } else {
         params[key] = value
       }
@@ -297,6 +299,14 @@ const setAttribute = (el, key, value) => {
     else el.setAttribute(key, value)
   }
 }
+
+const parseCSSText = css =>
+  css.split(';').reduce((object, pair) => {
+    if (!pair) return object // last pair
+    var [key,value] = pair.split(':')
+    object[key.trim()] = value.trim()
+    return object
+  }, {})
 
 /**
  * The runtime component of JSX
