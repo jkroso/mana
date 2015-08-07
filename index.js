@@ -199,9 +199,8 @@ const updateChildren = (a, b) => {
   }
 }
 
-const createSVG = (tag) => {
+const createSVG = (tag) =>
   document.createElementNS('http://www.w3.org/2000/svg', tag)
-}
 
 const createElement = {
   svg() {
