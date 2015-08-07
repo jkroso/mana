@@ -287,8 +287,9 @@ const setAttribute = (el, key, value) => {
   } else if (key == 'value') {
     // often value has already updated itself
     if (el.value != value) el.value = value
-  } else if (key == 'className' && typeof el.className == 'string') {
-    el.className = value // chrome bug
+  } else if (key == 'className') {
+    if (typeof el.className == 'string') el.className = value // chrome bug
+    else el.classList.add(...value.split(' ')) // chrome SVG bug
   } else if (key in attrWhiteList) {
     if (typeof value == 'boolean') el[key] = value
     else el.setAttribute(key, value)
