@@ -1,6 +1,5 @@
 const tmp = document.createElement('div')
 const NODE = Symbol('node')
-const call = Function.call
 
 class Node {
   remove() {
@@ -172,17 +171,14 @@ const adoptNewDOMElement = (node, dom) => {
   node.children.forEach(child => dom.appendChild(child.toDOM()))
 }
 
-const notifyUnmount = node => {
+const notifyDepthFirst = event => function recur(node){
   if (!node.children) return
-  node.children.forEach(notifyUnmount)
-  node.notify('unmount', node.dom)
+  node.children.forEach(recur)
+  node.notify(event, node.dom)
 }
 
-const notifyMount = node => {
-  if (!node.children) return
-  node.children.forEach(notifyMount)
-  node.notify('mount', node.dom)
-}
+const notifyUnmount = notifyDepthFirst('unmount')
+const notifyMount = notifyDepthFirst('mount')
 
 const easyUpdate = (a, b) => {
   if (a === b) { /*no change*/ }
