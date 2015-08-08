@@ -60,7 +60,7 @@ const dispatchEvent = e => {
     target = target.parentNode
     if (node == null) continue
     var fn = node.events[type]
-    fn && fn.call(node, e)
+    fn && fn.call(node, e, node)
     if (e.cancelBubble) break
   }
 }
