@@ -57,6 +57,10 @@ class Element extends Node {
       if (typeof value == 'function' && /^on\w+$/.test(key)) {
         this.listen(key.substring(2).toLowerCase(), value)
       } else if (key == 'class') {
+        if (typeof value == 'string') {
+          params.className = value
+          continue
+        }
         for (key in value) if (value[key]) {
           params.className = params.className
             ? params.className + ' ' + key
