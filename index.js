@@ -80,11 +80,30 @@ class Element extends Node {
    * @param  {String} type
    */
 
-  emit(type) {
+  notify(type, event) {
     var fn = this.events[type]
     if (fn == null) return
-    arguments[0] = this
-    call.apply(fn, arguments)
+    fn.call(type, event, this)
+  }
+
+  /**
+   * Invoke an event on this node and all its parents
+   *
+   * @param  {String} type
+   * @param  {event} event
+   */
+
+  emit(type, event) {
+    var node = this
+    var el = node.dom
+    while (node) {
+      var fn = node.events[type]
+      fn && fn.call(node, event, node)
+      if (event.cancelBubble) break
+      el = el.parentNode
+      if (el === undefined) break
+      node = el[NODE]
+    }
   }
 
   /**
@@ -156,13 +175,13 @@ const adoptNewDOMElement = (node, dom) => {
 const notifyUnmount = node => {
   if (!node.children) return
   node.children.forEach(notifyUnmount)
-  node.emit('unmount', node.dom)
+  node.notify('unmount', node.dom)
 }
 
 const notifyMount = node => {
   if (!node.children) return
   node.children.forEach(notifyMount)
-  node.emit('mount', node.dom)
+  node.notify('mount', node.dom)
 }
 
 const easyUpdate = (a, b) => {

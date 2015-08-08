@@ -1,8 +1,8 @@
 const Cursor = require('cursor/soft')
 const domready = require('domready')
 const assert = require('assert')
+const {NODE,JSX} = require('./')
 const Atom = require('cell')
-const {NODE} = require('./')
 
 /**
  * Initialize an app and mount it at `location`
@@ -54,15 +54,15 @@ function stopPropagation() {
 
 const dispatchEvent = e => {
   e.stopPropagation = stopPropagation
-  var {target,type} = e
-  while (target) {
-    var node = target[NODE]
+  var target = e.target
+  var node = target[NODE]
+  // find nearest virtual element
+  while (node === undefined) {
     target = target.parentNode
-    if (node == null) continue
-    var fn = node.events[type]
-    fn && fn.call(node, e, node)
-    if (e.cancelBubble) break
+    if (target == null) return
+    node = target[NODE]
   }
+  node.emit(e.type, e, node)
 }
 
 ;[
@@ -97,4 +97,4 @@ const dispatchEvent = e => {
   'focusout'
 ].forEach(event => window.addEventListener(event, dispatchEvent, true))
 
-export default App
+export {App,JSX}
