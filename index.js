@@ -81,8 +81,7 @@ class Element extends Node {
 
   notify(type, event) {
     var fn = this.events[type]
-    if (fn == null) return
-    fn.call(type, event, this)
+    fn && fn.call(type, event, this)
   }
 
   /**
@@ -93,11 +92,10 @@ class Element extends Node {
    */
 
   emit(type, event) {
+    var el = this.dom
     var node = this
-    var el = node.dom
     while (node) {
-      var fn = node.events[type]
-      fn && fn.call(node, event, node)
+      node.notify(type, event)
       if (event.cancelBubble) break
       el = el.parentNode
       if (el === undefined) break
