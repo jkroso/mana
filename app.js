@@ -1,4 +1,4 @@
-const Cursor = require('cursor/soft')
+const {RootCursor} = require('cursor')
 const domready = require('domready')
 const assert = require('assert')
 const {NODE,JSX} = require('./')
@@ -17,19 +17,18 @@ class App {
     this.isRendering = false
     this.redrawScheduled = false
     this.atom = state instanceof Atom ? state : new Atom(state)
-    this.state = new Cursor(this.atom)
-    this.UI = render(this.state)
+    this.cursor = new RootCursor(this.atom)
+    this.UI = render(this.cursor)
 
     this.redraw = () => {
       this.redrawScheduled = false
       this.isRendering = true
-      this.UI = this.UI.update(render(this.state))
+      this.UI = this.UI.update(render(this.cursor))
       this.isRendering = false
       this.onRedraw()
     }
 
     this.atom.addListener(() => {
-      this.state = new Cursor(this.atom)
       assert(!this.isRendering, 'redraw requested while rendering')
       if (this.redrawScheduled) return
       this.redrawScheduled = true
