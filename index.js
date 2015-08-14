@@ -88,7 +88,7 @@ class Element extends Node {
    * Invoke an event on this node and all its parents
    *
    * @param  {String} type
-   * @param  {event} event
+   * @param  {event} [event]
    */
 
   emit(type, event) {
@@ -96,7 +96,7 @@ class Element extends Node {
     var node = this
     while (node) {
       node.notify(type, event)
-      if (event.cancelBubble) break
+      if (event && event.cancelBubble) break
       el = el.parentNode
       if (el === undefined) break
       node = el[NODE]
