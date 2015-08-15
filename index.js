@@ -11,6 +11,7 @@ class Node {
     // This can happen when re-using parts of the virtual DOM between renders
     parent.replaceChild(tmp, this.dom)
     parent.replaceChild(next.toDOM(), tmp)
+    linkNodes(this.dom, next)
     return next
   }
 }
@@ -25,7 +26,7 @@ class Text extends Node {
     return this.dom = document.createTextNode(this.text)
   }
   update(next) {
-    if (easyUpdate(this, next)) return next
+    if (next.constructor != Text) return this.replace(next)
     if (this.text != next.text) this.dom.nodeValue = next.text
     next.dom = this.dom
     return next
@@ -135,7 +136,7 @@ class Element extends Node {
   }
 
   update(next) {
-    if (easyUpdate(this, next)) return next
+    if (this.constructor != next.constructor) return this.replace(next)
     if (this.tagName != next.tagName) return this.replace(next)
     updateAttributes(this.params, next.params, this.dom)
     updateChildren(this, next)
@@ -176,14 +177,6 @@ const notifyDepthFirst = event => function recur(node){
 
 const notifyUnmount = notifyDepthFirst('unmount')
 const notifyMount = notifyDepthFirst('mount')
-
-const easyUpdate = (a, b) => {
-  if (a === b) { /*no change*/ }
-  else if (b == null) a.remove()
-  else if (a.constructor != b.constructor) a.replace(b)
-  else return false
-  return true
-}
 
 const linkNodes = (el, o) => (o.dom = el, el[NODE] = o)
 
