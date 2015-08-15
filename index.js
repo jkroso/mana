@@ -49,7 +49,7 @@ class Element extends Node {
    * @param {Object} params
    */
 
-  mergeParams(parameters){
+  mergeParams(parameters) {
     var params = this.params
     for (var key in parameters) {
       var value = parameters[key]
