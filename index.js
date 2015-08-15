@@ -136,6 +136,7 @@ class Element extends Node {
   }
 
   update(next) {
+    if (this === next) return next
     if (this.constructor != next.constructor) return this.replace(next)
     if (this.tagName != next.tagName) return this.replace(next)
     this.updateParams(next.params)
