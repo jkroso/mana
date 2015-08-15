@@ -171,7 +171,7 @@ const adoptNewDOMElement = (node, dom) => {
 const notifyDepthFirst = event => function recur(node){
   if (!node.children) return
   node.children.forEach(recur)
-  node.notify(event, node.dom)
+  node.notify(event, node)
 }
 
 const notifyUnmount = notifyDepthFirst('unmount')
