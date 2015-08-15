@@ -33,14 +33,13 @@ class Text extends Node {
 }
 
 class Element extends Node {
-  constructor(tagName, params=null, children=[]) {
+  constructor(tagName, params, children, events) {
     super()
     this.dom = null
     this.tagName = tagName
-    this.params = {}
-    this.children = children
-    this.events = {}
-    this.mergeParams(params)
+    this.params = params || {}
+    this.children = children || []
+    this.events = events || {}
   }
 
   /**
@@ -339,7 +338,7 @@ const JSX = (Type, params, ...children) => {
   if (typeof Type == 'function') {
     return Type(params, children)
   } else {
-    return new Element(Type, params, children)
+    return new Element(Type, {}, children).mergeParams(params)
   }
 }
 
