@@ -81,7 +81,7 @@ class Element extends Node {
 
   notify(type, event) {
     var fn = this.events[type]
-    fn && fn.call(type, event, this)
+    fn && fn.call(this, event, this)
   }
 
   /**
