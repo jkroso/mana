@@ -138,10 +138,48 @@ class Element extends Node {
   update(next) {
     if (this.constructor != next.constructor) return this.replace(next)
     if (this.tagName != next.tagName) return this.replace(next)
-    updateAttributes(this.params, next.params, this.dom)
-    updateChildren(this, next)
+    this.updateParams(next.params)
+    this.updateChildren(next.children)
     linkNodes(this.dom, next)
     return next
+  }
+
+  updateParams(b) {
+    const a = this.params
+    const dom = this.dom
+    for (var key in a) {
+      if (key in b) {
+        if (a[key] != b[key]) setAttribute(dom, key, b[key])
+      } else if (key == 'className') {
+        dom.className = '' /*browser bug workaround*/
+      } else {
+        dom.removeAttribute(key)
+      }
+    }
+
+    for (var key in b) {
+      key in a || setAttribute(dom, key, b[key])
+    }
+  }
+
+  updateChildren(bChildren) {
+    const {children,dom} = this
+    var l = children.length
+
+    // remove redundant nodes
+    while (l > bChildren.length) children[--l].remove()
+
+    // mutate existing nodes
+    for (var i = 0; i < l; i++) {
+      children[i].update(bChildren[i])
+    }
+
+    // append extras
+    while (l < bChildren.length) {
+      var child = bChildren[l++]
+      dom.appendChild(child.toDOM())
+      notifyMount(child)
+    }
   }
 
   remove() {
@@ -179,41 +217,6 @@ const notifyUnmount = notifyDepthFirst('unmount')
 const notifyMount = notifyDepthFirst('mount')
 
 const linkNodes = (el, o) => (o.dom = el, el[NODE] = o)
-
-const updateAttributes = (a, b, dom) => {
-  for (var key in a) {
-    if (key in b) {
-      if (a[key] != b[key]) setAttribute(dom, key, b[key])
-    } else if (key == 'className') {
-      dom.className = '' /*browser bug workaround*/
-    } else {
-      dom.removeAttribute(key)
-    }
-  }
-
-  for (var key in b) {
-    key in a || setAttribute(dom, key, b[key])
-  }
-}
-
-const updateChildren = (a, b) => {
-  var l = a.children.length
-
-  // remove redundant nodes
-  while (l > b.children.length) a.children[--l].remove()
-
-  // mutate existing nodes
-  for (var i = 0; i < l; i++) {
-    a.children[i].update(b.children[i])
-  }
-
-  // append extras
-  while (l < b.children.length) {
-    var child = b.children[l++]
-    a.dom.appendChild(child.toDOM())
-    notifyMount(child)
-  }
-}
 
 const createSVG = (tag) =>
   document.createElementNS('http://www.w3.org/2000/svg', tag)
