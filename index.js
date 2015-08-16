@@ -98,7 +98,7 @@ class Element extends Node {
       node.notify(type, event)
       if (event && event.cancelBubble) break
       el = el.parentNode
-      if (el === undefined) break
+      if (el == null) break
       node = el[NODE]
     }
   }
