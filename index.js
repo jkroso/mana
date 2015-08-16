@@ -11,7 +11,6 @@ class Node {
     // This can happen when re-using parts of the virtual DOM between renders
     parent.replaceChild(tmp, this.dom)
     parent.replaceChild(next.toDOM(), tmp)
-    linkNodes(this.dom, next)
     return next
   }
 }
