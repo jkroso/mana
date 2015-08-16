@@ -53,15 +53,13 @@ function stopPropagation() {
 
 const dispatchEvent = e => {
   e.stopPropagation = stopPropagation
-  var target = e.target
-  var node = target[NODE]
-  // find nearest virtual element
-  while (node === undefined) {
+  var {target,type} = e
+  while (target) {
+    var node = target[NODE]
+    if (node) node.notify(type, e)
+    if (event.cancelBubble) break
     target = target.parentNode
-    if (target == null) return
-    node = target[NODE]
   }
-  node.emit(e.type, e, node)
 }
 
 ;[
