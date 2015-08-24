@@ -140,6 +140,7 @@ class Element extends Node {
     if (this.tagName != next.tagName) return this.replace(next)
     this.updateParams(next.params)
     this.updateChildren(next.children)
+    this.updateEvents(next.events)
     linkNodes(this.dom, next)
     return next
   }
@@ -182,6 +183,15 @@ class Element extends Node {
     }
   }
 
+  /**
+   * Bind listeners for non-bubbling DOM events
+   */
+
+  updateEvents(events) {
+    if (events.mouseleave) this.dom.onmouseleave = notify
+    if (events.mouseenter) this.dom.onmouseenter = notify
+  }
+
   remove() {
     notifyUnmount(this)
     super.remove()
@@ -200,11 +210,14 @@ class Element extends Node {
   }
 }
 
+const notify = e => e.target[NODE].notify(e.type, e)
+
 const adoptNewDOMElement = (node, dom) => {
   linkNodes(dom, node)
   var attrs = node.params
   for (var key in attrs) setAttribute(dom, key, attrs[key])
   node.children.forEach(child => dom.appendChild(child.toDOM()))
+  node.updateEvents(node.events)
 }
 
 const notifyDepthFirst = event => function recur(node){
