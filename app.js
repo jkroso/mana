@@ -2,7 +2,6 @@ const {RootCursor} = require('cursor')
 const domready = require('domready')
 const assert = require('assert')
 const {NODE,JSX} = require('./')
-const Atom = require('cell')
 
 /**
  * Initialize an app and mount it at `location`
@@ -16,8 +15,7 @@ class App {
   constructor(state, render, location) {
     this.isRendering = false
     this.redrawScheduled = false
-    this.atom = state instanceof Atom ? state : new Atom(state)
-    this.cursor = new RootCursor(this.atom)
+    this.cursor = state instanceof RootCursor ? state : new RootCursor(state)
     this.UI = render(this.cursor)
 
     this.redraw = () => {
@@ -28,7 +26,7 @@ class App {
       this.onRedraw()
     }
 
-    this.atom.addListener(() => {
+    this.cursor.addListener(() => {
       assert(!this.isRendering, 'redraw requested while rendering')
       if (this.redrawScheduled) return
       this.redrawScheduled = true

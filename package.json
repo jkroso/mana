@@ -5,12 +5,10 @@
   "keywords": ["virtual dom","framework","UI"],
   "dependencies": {
     "cursor": "jsiom/cursor",
-    "cell": "jkroso/cell",
-    "babelify": "*",
-    "domready": "1"
+    "domready": "1",
+    "babelify": "*"
   },
   "devDependencies": {
-    "assert": "jkroso/assert",
     "serve": "jkroso/serve",
     "hydro-html": "*",
     "hydro-bdd": "*",
