@@ -5,10 +5,10 @@
   "keywords": ["virtual dom","framework","UI"],
   "dependencies": {
     "cursor": "jsiom/cursor",
-    "domready": "1",
     "babelify": "*"
   },
   "devDependencies": {
+    "dom-event": "jkroso/dom-event",
     "serve": "jkroso/serve",
     "hydro-html": "*",
     "hydro-bdd": "*",
@@ -19,6 +19,6 @@
   },
   "repository": "git://github.com/jkroso/mana.git",
   "author": "Jake Rosoman",
-  "files": ["index.js", "app.js"],
+  "files": ["index.js"],
   "license": "MIT"
 }

@@ -1,4 +1,5 @@
-const {JSX,NODE,Element} = require('..')
+const {JSX,NODE,Text,Element,App} = require('..')
+const event = require('dom-event')
 
 const eql = (a,b) => a.toDOM().outerHTML == b.toDOM().outerHTML
 
@@ -22,13 +23,42 @@ describe('Element', () => {
   })
 })
 
-it('JSX', () => {
-  assert(eql(<img/>, JSX('img')))
-  assert(eql(<h1>a</h1>, JSX('h1', null, 'a')))
-  assert(eql(<h1><a href="#">a</a></h1>,
-             JSX('h1', null, JSX('a', {href:"#"}, 'a'))))
-  assert(eql(<ul>{['a', 'b', 'c']}</ul>,
-             JSX('ul', null, 'a', 'b', 'c')))
+describe('App', () => {
+  const app = new App({user:'jkroso'}, cursor => {
+    return new Element('div',
+                       {className: 'name'},
+                       [new Text(cursor.value.user)],
+                       {click: () => app.remove()})
+  })
+
+  it('mountIn', () => {
+    app.mountIn(document.body)
+    assert(app.dom.parentNode == document.body)
+    assert(app.dom.outerHTML == '<div class="app"><div class="name">jkroso</div></div>')
+  })
+
+  it('event dispatcher', () => {
+    app.dom.firstChild.dispatchEvent(event('click'))
+    assert(app.dom.parentNode == null)
+  })
+})
+
+describe('JSX', () => {
+  it('create elements', () => {
+    assert(eql(<img/>, JSX('img')))
+    assert(eql(<h1>a</h1>, JSX('h1', null, 'a')))
+    assert(eql(<h1><a href="#">a</a></h1>,
+               JSX('h1', null, JSX('a', {href:"#"}, 'a'))))
+    assert(eql(<ul>{['a', 'b', 'c']}</ul>,
+               JSX('ul', null, 'a', 'b', 'c')))
+  })
+
+  it('Component defined queries', () => {
+    const Component = ({cursor}) => <span>{cursor.value}</span>
+    Component.query = '/some-path'
+    const app = new App(new Map([['some-path', 1]]), () => <Component/>)
+    assert(eql(app.children[0], <span>1</span>))
+  })
 })
 
 describe('Problem areas', () => {

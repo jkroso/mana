@@ -1,3 +1,6 @@
+const {RootCursor} = require('cursor')
+const assert = require('assert')
+
 const tmp = document.createElement('div')
 const NODE = Symbol('node')
 
@@ -231,8 +234,7 @@ const notifyMount = notifyDepthFirst('mount')
 
 const linkNodes = (el, o) => (o.dom = el, el[NODE] = o)
 
-const createSVG = (tag) =>
-  document.createElementNS('http://www.w3.org/2000/svg', tag)
+const createSVG = tag => document.createElementNS('http://www.w3.org/2000/svg', tag)
 
 const createElement = {
   svg() {
@@ -328,7 +330,7 @@ const setAttribute = (el, key, value) => {
 const parseCSSText = css =>
   css.split(';').reduce((object, pair) => {
     if (!pair) return object // last pair
-    var [key,value] = pair.split(':')
+    const [key,value] = pair.split(':')
     object[key.trim()] = value.trim()
     return object
   }, {})
@@ -345,6 +347,10 @@ const parseCSSText = css =>
 const JSX = (Type, params, ...children) => {
   children = children.reduce(toNodes, [])
   if (typeof Type == 'function') {
+    if (!(params && params.cursor) && Type.query) {
+      params = params || {}
+      params.cursor = parseCursor(Type.query)
+    }
     return Type(params, children)
   } else {
     return new Element(Type, {}, children).mergeParams(params)
@@ -359,4 +365,118 @@ const toNodes = (nodes, val) => {
   return nodes
 }
 
-export {Text,Element,Node,JSX,NODE}
+// the RootCursor of the App currently being rendered
+var cursor = null
+
+const parseCursor = path => cursor.getIn(...path.split('/').filter(Boolean))
+
+/**
+ * An element which automatically re-renders its children
+ * when its state changes. It also wraps `state` in a cursor to
+ * make it easy for components to notify it when they manipulate the
+ * `state`
+ *
+ * @param {Any} state
+ * @param {Function} render
+ * @return {<div class='app'/>}
+ */
+
+class App extends Element {
+  constructor(state, render) {
+    super('div', {className: 'app'}, [])
+    this.listen('mount', this.onMount)
+    this.listen('unmount', this.onUnMount)
+    this.isRendering = true
+    this.redrawScheduled = false
+    this.cursor = state instanceof RootCursor ? state : new RootCursor(state)
+
+    this.redraw = () => {
+      this.redrawScheduled = false
+      this.isRendering = true
+      cursor = this.cursor // for the JSX function
+      const children = toArray(render(this.cursor))
+      cursor = null
+      this.updateChildren(children)
+      this.children = children
+      this.isRendering = false
+    }
+
+    this.cursor.addListener(() => {
+      assert(!this.isRendering, 'redraw requested while rendering')
+      if (this.redrawScheduled) return
+      this.redrawScheduled = true
+      requestAnimationFrame(this.redraw)
+    })
+
+    this.children = toArray(render(cursor = this.cursor))
+    cursor = null
+    this.isRendering = false
+  }
+
+  mountIn(container) {
+    container.appendChild(this.toDOM())
+    notifyMount(this)
+  }
+
+  onMount({dom}) {
+    events.forEach(event => dom.addEventListener(event, dispatchEvent, true))
+  }
+
+  onUnMount({dom}) {
+    events.forEach(event => dom.removeEventListener(event, dispatchEvent, true))
+  }
+}
+
+const toArray = v => Array.isArray(v) ? v : [v]
+
+const events = [
+  'click',
+  'mousedown',
+  'mouseup',
+  'dblclick',
+  'mousedown',
+  'mouseup',
+  'mouseover',
+  'mouseout',
+  'mousemove',
+  'dragstart',
+  'drag',
+  'dragenter',
+  'dragleave',
+  'dragover',
+  'drop',
+  'dragend',
+  'keydown',
+  'keypress',
+  'keyup',
+  'scroll',
+  'select',
+  'change',
+  'submit',
+  'reset',
+  'focus',
+  'blur',
+  'focusin',
+  'focusout'
+]
+
+/**
+ * Hack so we know when its been called
+ */
+
+function stopPropagation() {
+  this.cancelBubble = true
+}
+
+const dispatchEvent = e => {
+  e.stopPropagation = stopPropagation
+  var {target,type} = e
+  while (target) {
+    var node = target[NODE]
+    if (node) node.notify(type, e)
+    if (event.cancelBubble) break
+    target = target.parentNode
+  }
+}
+
+export {Text,Element,App,Node,JSX,NODE}
