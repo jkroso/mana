@@ -383,9 +383,7 @@ const parseCursor = path => cursor.getIn(...path.split('/').filter(Boolean))
 
 class App extends Element {
   constructor(state, render) {
-    super('div', {className: 'app'}, [])
-    this.listen('mount', this.onMount)
-    this.listen('unmount', this.onUnMount)
+    super('div', {className: 'app'})
     this.isRendering = true
     this.redrawScheduled = false
     this.cursor = state instanceof RootCursor ? state : new RootCursor(state)
@@ -417,19 +415,30 @@ class App extends Element {
     container.appendChild(this.toDOM())
     notifyMount(this)
   }
-
-  onMount({dom}) {
-    events.forEach(event => dom.addEventListener(event, dispatchEvent, true))
-  }
-
-  onUnMount({dom}) {
-    events.forEach(event => dom.removeEventListener(event, dispatchEvent, true))
-  }
 }
 
 const toArray = v => Array.isArray(v) ? v : [v]
 
-const events = [
+/**
+ * Hack so we know when its been called
+ */
+
+function stopPropagation() {
+  this.cancelBubble = true
+}
+
+const dispatchEvent = e => {
+  e.stopPropagation = stopPropagation
+  var {target,type} = e
+  while (target) {
+    var node = target[NODE]
+    if (node) node.notify(type, e)
+    if (event.cancelBubble) break
+    target = target.parentNode
+  }
+}
+
+;[
   'click',
   'mousedown',
   'mouseup',
@@ -458,25 +467,6 @@ const events = [
   'blur',
   'focusin',
   'focusout'
-]
-
-/**
- * Hack so we know when its been called
- */
-
-function stopPropagation() {
-  this.cancelBubble = true
-}
-
-const dispatchEvent = e => {
-  e.stopPropagation = stopPropagation
-  var {target,type} = e
-  while (target) {
-    var node = target[NODE]
-    if (node) node.notify(type, e)
-    if (event.cancelBubble) break
-    target = target.parentNode
-  }
-}
+].forEach(event => window.addEventListener(event, dispatchEvent, true))
 
 export {Text,Element,App,Node,JSX,NODE}
