@@ -61,6 +61,29 @@ describe('JSX', () => {
   })
 })
 
+describe('toString()', () => {
+  it('no children', () => {
+    assert(<div class='a'/> == '<div class="a"></div>')
+  })
+
+  it('with children', () => {
+    assert(<div class='traffic-light'>
+             <div style='color:red;'/>
+             <div style='color:orange;'/>
+             <div style='color:green;'/>
+           </div>
+       == '<div class="traffic-light">'
+        +   '<div style="color:red;"></div>'
+        +   '<div style="color:orange;"></div>'
+        +   '<div style="color:green;"></div>'
+        + '</div>')
+  })
+
+  it('self closing', () => {
+    assert(<img src='a'/> == '<img src="a"/>')
+  })
+})
+
 describe('Problem areas', () => {
   describe('element reuse', () => {
     it('multiple DOM elements pointing to a single node', () => {

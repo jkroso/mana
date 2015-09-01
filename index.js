@@ -1,5 +1,11 @@
+const escapeHTML = require('escape-html')
 const {RootCursor} = require('cursor')
 const assert = require('assert')
+
+const self_closing = new Set([
+  'area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input',
+  'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'
+])
 
 const tmp = document.createElement('div')
 const NODE = Symbol('node')
@@ -32,6 +38,9 @@ class Text extends Node {
     if (this.text != next.text) this.dom.nodeValue = next.text
     next.dom = this.dom
     return next
+  }
+  toString() {
+    return this.text
   }
 }
 
@@ -211,7 +220,23 @@ class Element extends Node {
     adoptNewDOMElement(this, el)
     notifyMount(this)
   }
+
+  toString() {
+    var html = '<' + this.tagName
+    for (var key in this.params) {
+      if (key in attrWhiteList) {
+        var value = this.params[key]
+        if (key == 'className') key = 'class'
+        if (key == 'style') value = serializeStyle(value)
+        html += ` ${key}="${escapeHTML(value)}"`
+      }
+    }
+    if (self_closing.has(this.tagName)) return html + '/>'
+    return this.children.reduce(add, html + '>') + `</${this.tagName}>`
+  }
 }
+
+const add = (a, b) => a + b
 
 const notify = e => e.target[NODE].notify(e.type, e)
 
@@ -334,6 +359,12 @@ const parseCSSText = css =>
     object[key.trim()] = value.trim()
     return object
   }, {})
+
+const serializeStyle = style => {
+  var css = ''
+  for (var key in style) css += `${key}:${style[key]};`
+  return css
+}
 
 /**
  * The runtime component of JSX

@@ -5,6 +5,7 @@
   "keywords": ["virtual dom","framework","UI"],
   "dependencies": {
     "cursor": "jsiom/cursor",
+    "escape-html": "1",
     "babelify": "*"
   },
   "devDependencies": {
