@@ -370,13 +370,13 @@ const serializeStyle = style => {
  * The runtime component of JSX
  *
  * @param  {String|Function} Type
- * @param  {Object} params
- * @param  {[Node]} ...children
+ * @param  {Object} [params]
+ * @param  {[Element]} [children]
  * @return {Element}
  */
 
-const JSX = (Type, params, ...children) => {
-  children = children.reduce(toNodes, [])
+const JSX = (Type, params, children) => {
+  if (children) children = children.reduce(toNodes, [])
   if (typeof Type == 'function') {
     if (!(params && params.cursor) && Type.query) {
       params = params || {}

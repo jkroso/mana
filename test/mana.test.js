@@ -46,11 +46,11 @@ describe('App', () => {
 describe('JSX', () => {
   it('create elements', () => {
     assert(eql(<img/>, JSX('img')))
-    assert(eql(<h1>a</h1>, JSX('h1', null, 'a')))
+    assert(eql(<h1>a</h1>, JSX('h1', null, ['a'])))
     assert(eql(<h1><a href="#">a</a></h1>,
-               JSX('h1', null, JSX('a', {href:"#"}, 'a'))))
+               JSX('h1', null, [JSX('a', {href:"#"}, ['a'])])))
     assert(eql(<ul>{['a', 'b', 'c']}</ul>,
-               JSX('ul', null, 'a', 'b', 'c')))
+               JSX('ul', null, ['a', 'b', 'c'])))
   })
 
   it('Component defined queries', () => {

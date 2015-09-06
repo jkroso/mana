@@ -18,6 +18,7 @@
   "browserify": {
     "transform": [["babelify", {"jsxPragma": "JSX","stage":0}]]
   },
+  "transpile": [["*.js", "!sourcegraph/babel->js"]],
   "repository": "git://github.com/jkroso/mana.git",
   "author": "Jake Rosoman",
   "files": ["index.js"],
