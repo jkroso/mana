@@ -1,6 +1,7 @@
 const escapeHTML = require('escape-html')
 const {RootCursor} = require('cursor')
 const assert = require('assert')
+const equals = require('equals')
 
 const self_closing = new Set([
   'area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input',
@@ -236,6 +237,83 @@ class Element extends Node {
   }
 }
 
+/**
+ * An element which automatically re-renders its children
+ * when its state changes. It also wraps `state` in a cursor to
+ * make it easy for components to notify it when they manipulate the
+ * `state`
+ *
+ * @param {Any} state
+ * @param {Function} render
+ * @return {<div class='app'/>}
+ */
+
+class App extends Element {
+  constructor(state, render) {
+    super('div', {className: 'app'})
+    this.isRendering = true
+    this.redrawScheduled = false
+    this.cursor = state instanceof RootCursor ? state : new RootCursor(state)
+
+    this.redraw = () => {
+      this.redrawScheduled = false
+      this.isRendering = true
+      cursor = this.cursor // for the JSX function
+      const children = toArray(render(this.cursor))
+      cursor = null
+      this.updateChildren(children)
+      this.children = children
+      this.isRendering = false
+    }
+
+    this.cursor.addListener(() => {
+      assert(!this.isRendering, 'redraw requested while rendering')
+      if (this.redrawScheduled) return
+      this.redrawScheduled = true
+      requestAnimationFrame(this.redraw)
+    })
+
+    this.children = toArray(render(cursor = this.cursor))
+    cursor = null
+    this.isRendering = false
+  }
+
+  mountIn(container) {
+    container.appendChild(this.toDOM())
+    notifyMount(this)
+  }
+}
+
+class Thunk extends Node {
+  constructor(...args) {
+    super()
+    this.arguments = args
+    this.node = null
+  }
+  call() {
+    if (this.node) return this.node
+    return this.node = this.render(...this.arguments)
+  }
+  toDOM() {
+    return this.call().toDOM()
+  }
+  update(next) {
+    if (!(next instanceof Thunk)) return this.node.update(next)
+    if (this.isEqual(next)) return this
+    this.node.update(next.call())
+    return next
+  }
+  isEqual(next) {
+    return equals(this.arguments, next.arguments)
+  }
+  get children() {
+    return this.call().children
+  }
+  notify(type) {
+    this.call().notify(type, this.call())
+  }
+}
+
 const add = (a, b) => a + b
 
 const notify = e => e.target[NODE].notify(e.type, e)
@@ -369,23 +447,23 @@ const serializeStyle = style => {
 /**
  * The runtime component of JSX
  *
- * @param  {String|Function} Type
+ * @param  {String|Class|Function} type
  * @param  {Object} [params]
  * @param  {[Element]} [children]
  * @return {Element}
  */
 
-const JSX = (Type, params, children) => {
+const JSX = (type, params, children) => {
   if (children) children = children.reduce(toNodes, [])
-  if (typeof Type == 'function') {
-    if (!(params && params.cursor) && Type.query) {
-      params = params || {}
-      params.cursor = parseCursor(Type.query)
+  if (type.prototype instanceof Node) {
+    if (params.cursor === undefined && type.prototype.query) {
+      params.cursor = parseCursor(type.prototype.query)
     }
-    return Type(params, children)
-  } else {
-    return new Element(Type, {}, children).mergeParams(params)
+    return new type(params, children)
   }
+  return typeof type == 'string'
+    ? new Element(type, {}, children).mergeParams(params)
+    : type(params, children)
 }
 
 const toNodes = (nodes, val) => {
@@ -400,53 +478,6 @@ const toNodes = (nodes, val) => {
 var cursor = null
 
 const parseCursor = path => cursor.getIn(...path.split('/').filter(Boolean))
-
-/**
- * An element which automatically re-renders its children
- * when its state changes. It also wraps `state` in a cursor to
- * make it easy for components to notify it when they manipulate the
- * `state`
- *
- * @param {Any} state
- * @param {Function} render
- * @return {<div class='app'/>}
- */
-
-class App extends Element {
-  constructor(state, render) {
-    super('div', {className: 'app'})
-    this.isRendering = true
-    this.redrawScheduled = false
-    this.cursor = state instanceof RootCursor ? state : new RootCursor(state)
-
-    this.redraw = () => {
-      this.redrawScheduled = false
-      this.isRendering = true
-      cursor = this.cursor // for the JSX function
-      const children = toArray(render(this.cursor))
-      cursor = null
-      this.updateChildren(children)
-      this.children = children
-      this.isRendering = false
-    }
-
-    this.cursor.addListener(() => {
-      assert(!this.isRendering, 'redraw requested while rendering')
-      if (this.redrawScheduled) return
-      this.redrawScheduled = true
-      requestAnimationFrame(this.redraw)
-    })
-
-    this.children = toArray(render(cursor = this.cursor))
-    cursor = null
-    this.isRendering = false
-  }
-
-  mountIn(container) {
-    container.appendChild(this.toDOM())
-    notifyMount(this)
-  }
-}
 
 const toArray = v => Array.isArray(v) ? v : [v]
 
@@ -500,4 +531,4 @@ const dispatchEvent = e => {
   'focusout'
 ].forEach(event => window.addEventListener(event, dispatchEvent, true))
 
-export {Text,Element,App,Node,JSX,NODE}
+export {Node,Text,Element,App,Thunk,JSX,NODE}

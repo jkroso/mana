@@ -6,7 +6,8 @@
   "dependencies": {
     "cursor": "jsiom/cursor",
     "escape-html": "1",
-    "babelify": "*"
+    "babelify": "*",
+    "equals": "1"
   },
   "devDependencies": {
     "dom-event": "jkroso/dom-event",
