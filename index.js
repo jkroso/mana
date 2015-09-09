@@ -256,14 +256,17 @@ class App extends Element {
     this.cursor = state instanceof RootCursor ? state : new RootCursor(state)
 
     this.redraw = () => {
-      this.redrawScheduled = false
-      this.isRendering = true
-      cursor = this.cursor // for the JSX function
-      const children = toArray(render(this.cursor))
-      cursor = null
-      this.updateChildren(children)
-      this.children = children
-      this.isRendering = false
+      try {
+        this.redrawScheduled = false
+        cursor = this.cursor // for the JSX function
+        this.isRendering = true
+        const children = toArray(render(this.cursor))
+        cursor = null
+        this.updateChildren(children)
+        this.children = children
+      } finally {
+        this.isRendering = false
+      }
     }
 
     this.cursor.addListener(() => {
