@@ -306,6 +306,12 @@ class Thunk extends Node {
     this.node.update(next.call())
     return next
   }
+  remove() {
+    return this.call().remove()
+  }
+  replace(next) {
+    return this.call().replace(next)
+  }
   isEqual(next) {
     return equals(this.arguments, next.arguments)
   }
