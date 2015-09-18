@@ -99,10 +99,19 @@ describe('Problem areas', () => {
       assert(dom.children[2][NODE] === UI.children[2])
     })
 
-    it('accross updates', () => {
+    it('one instance accross updates', () => {
       let node = <a/>
       let UI1 = <div><b>text</b>{node}</div>
       let UI2 = <div><b>{node}</b>text</div>
+      let dom = UI1.toDOM()
+      UI1.update(UI2)
+      assert(dom.outerHTML == UI2)
+    })
+
+    it('multiple instances across updates', () => {
+      let node = <a/>
+      let UI1 = <div>{node}{node}</div>
+      let UI2 = <div><b/>{node}</div>
       let dom = UI1.toDOM()
       UI1.update(UI2)
       assert(dom.outerHTML == UI2)
