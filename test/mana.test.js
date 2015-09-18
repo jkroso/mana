@@ -1,4 +1,4 @@
-const {JSX,NODE,Text,Element,App} = require('..')
+const {JSX,NODE,Text,Element,App,Thunk} = require('..')
 const event = require('dom-event')
 
 const eql = (a,b) => a.toDOM().outerHTML == b.toDOM().outerHTML
@@ -54,8 +54,12 @@ describe('JSX', () => {
   })
 
   it('Component defined queries', () => {
-    const Component = ({cursor}) => <span>{cursor.value}</span>
-    Component.query = '/some-path'
+    class Component extends Thunk {
+      render({cursor}) {
+        return <span>{cursor.value}</span>
+      }
+    }
+    Component.prototype.query = 'some-path'
     const app = new App(new Map([['some-path', 1]]), () => <Component/>)
     assert(eql(app.children[0], <span>1</span>))
   })
@@ -87,13 +91,21 @@ describe('toString()', () => {
 describe('Problem areas', () => {
   describe('element reuse', () => {
     it('multiple DOM elements pointing to a single node', () => {
-      let a = <a/>
-      let div = <div>{a}{a}{a}</div>
-      let dom = div.toDOM()
-      assert(dom.children[0][NODE] === div.children[0])
-      assert(dom.children[1][NODE] === div.children[1])
-      assert(dom.children[2][NODE] === div.children[2])
+      let node = <a/>
+      let UI = <div>{node}{node}{node}</div>
+      let dom = UI.toDOM()
+      assert(dom.children[0][NODE] === UI.children[0])
+      assert(dom.children[1][NODE] === UI.children[1])
+      assert(dom.children[2][NODE] === UI.children[2])
     })
-    it('emit()')
+
+    it('accross updates', () => {
+      let node = <a/>
+      let UI1 = <div><b>text</b>{node}</div>
+      let UI2 = <div><b>{node}</b>text</div>
+      let dom = UI1.toDOM()
+      UI1.update(UI2)
+      assert(dom.outerHTML == UI2)
+    })
   })
 })

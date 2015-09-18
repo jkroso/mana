@@ -8,7 +8,6 @@ const self_closing = new Set([
   'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'
 ])
 
-const tmp = document.createElement('div')
 const NODE = Symbol('node')
 
 class Node {
@@ -17,10 +16,10 @@ class Node {
   }
   replace(next) {
     const parent = this.dom.parentElement
-    // In case toDOM() results in this.dom being assigned a new parentNode
-    // This can happen when re-using parts of the virtual DOM between renders
-    parent.replaceChild(tmp, this.dom)
-    parent.replaceChild(next.toDOM(), tmp)
+    const dom = next.dom
+      ? next.dom.parentElement ? next.dom.cloneNode(true) : next.dom
+      : next.toDOM()
+    parent.replaceChild(dom, this.dom)
     return next
   }
 }
@@ -465,7 +464,8 @@ const serializeStyle = style => {
 const JSX = (type, params, children) => {
   if (children) children = children.reduce(toNodes, [])
   if (type.prototype instanceof Node) {
-    if (params.cursor === undefined && type.prototype.query) {
+    if (!params || params.cursor === undefined && type.prototype.query) {
+      params = params || {}
       params.cursor = parseCursor(type.prototype.query)
     }
     return new type(params, children)
