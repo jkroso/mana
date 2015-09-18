@@ -104,7 +104,7 @@ describe('Problem areas', () => {
       let UI1 = <div><b>text</b>{node}</div>
       let UI2 = <div><b>{node}</b>text</div>
       let dom = UI1.toDOM()
-      UI1.update(UI2)
+      UI1.update(UI2, dom)
       assert(dom.outerHTML == UI2)
     })
 
@@ -113,7 +113,7 @@ describe('Problem areas', () => {
       let UI1 = <div>{node}{node}</div>
       let UI2 = <div><b/>{node}</div>
       let dom = UI1.toDOM()
-      UI1.update(UI2)
+      UI1.update(UI2, dom)
       assert(dom.outerHTML == UI2)
     })
   })

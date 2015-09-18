@@ -11,15 +11,11 @@ const self_closing = new Set([
 const NODE = Symbol('node')
 
 class Node {
-  remove() {
-    this.dom.parentNode.removeChild(this.dom)
+  remove(dom) {
+    dom.parentNode.removeChild(dom)
   }
-  replace(next) {
-    const parent = this.dom.parentElement
-    const dom = next.dom
-      ? next.dom.parentElement ? next.dom.cloneNode(true) : next.dom
-      : next.toDOM()
-    parent.replaceChild(dom, this.dom)
+  replace(next, dom) {
+    dom.parentElement.replaceChild(next.toDOM(), dom)
     return next
   }
 }
@@ -33,10 +29,9 @@ class Text extends Node {
   toDOM() {
     return this.dom = document.createTextNode(this.text)
   }
-  update(next) {
-    if (next.constructor != Text) return this.replace(next)
-    if (this.text != next.text) this.dom.nodeValue = next.text
-    next.dom = this.dom
+  update(next, dom) {
+    if (next.constructor != Text) return this.replace(next, dom)
+    if (this.text != next.text) dom.nodeValue = next.text
     return next
   }
   toString() {
@@ -146,20 +141,18 @@ class Element extends Node {
     return dom
   }
 
-  update(next) {
+  update(next, dom) {
     if (this === next) return next
-    if (this.constructor != next.constructor) return this.replace(next)
-    if (this.tagName != next.tagName) return this.replace(next)
-    this.updateParams(next.params)
-    this.updateChildren(next.children)
-    this.updateEvents(next.events)
-    linkNodes(this.dom, next)
-    return next
+    if (this.constructor != next.constructor) return this.replace(next, dom)
+    if (this.tagName != next.tagName) return this.replace(next, dom)
+    this.updateParams(next.params, dom)
+    this.updateChildren(next.children, dom)
+    this.updateEvents(next.events, dom)
+    return dom[NODE] = next
   }
 
-  updateParams(b) {
+  updateParams(b, dom) {
     const a = this.params
-    const dom = this.dom
     for (var key in a) {
       if (key in b) continue
       if (key == 'className') dom.className = '' // browser bug workaround
@@ -171,16 +164,17 @@ class Element extends Node {
     }
   }
 
-  updateChildren(bChildren) {
-    const {children,dom} = this
+  updateChildren(bChildren, dom) {
+    const {children} = this
     var l = children.length
+    var dc = dom.childNodes
 
     // remove redundant nodes
-    while (l > bChildren.length) children[--l].remove()
+    while (l > bChildren.length) children[--l].remove(dc[l])
 
     // mutate existing nodes
     for (var i = 0; i < l; i++) {
-      children[i].update(bChildren[i])
+      children[i].update(bChildren[i], dc[i])
     }
 
     // append extras
@@ -195,19 +189,23 @@ class Element extends Node {
    * Bind listeners for non-bubbling DOM events
    */
 
-  updateEvents(events) {
-    if (events.mouseleave) this.dom.onmouseleave = notify
-    if (events.mouseenter) this.dom.onmouseenter = notify
+  updateEvents(events, dom) {
+    if (events.mouseleave) dom.onmouseleave = notify
+    if (events.mouseenter) dom.onmouseenter = notify
   }
 
-  remove() {
+  remove(dom) {
+    if (!dom) dom = this.dom
+    this.dom = dom
     notifyUnmount(this)
-    super.remove()
+    super.remove(dom)
   }
 
-  replace(next) {
+  replace(next, dom) {
+    this.dom = dom
     notifyUnmount(this)
-    super.replace(next)
+    super.replace(next, dom)
+    next.dom = dom
     notifyMount(next)
     return next
   }
@@ -301,11 +299,11 @@ class Thunk extends Node {
     this.node.update(next.call())
     return next
   }
-  remove() {
-    return this.call().remove()
+  remove(dom) {
+    return this.call().remove(dom)
   }
-  replace(next) {
-    return this.call().replace(next)
+  replace(next, dom) {
+    return this.call().replace(next, dom)
   }
   isEqual(next) {
     return equals(this.arguments, next.arguments)
@@ -323,7 +321,8 @@ const add = (a, b) => a + b
 const notify = e => e.target[NODE].notify(e.type, e)
 
 const adoptNewDOMElement = (node, dom) => {
-  linkNodes(dom, node)
+  dom[NODE] = node
+  node.dom = dom
   var attrs = node.params
   for (var key in attrs) setAttribute(dom, key, attrs[key])
   node.children.forEach(child => dom.appendChild(child.toDOM()))
@@ -338,8 +337,6 @@ const notifyDepthFirst = event => function recur(node){
 
 const notifyUnmount = notifyDepthFirst('unmount')
 const notifyMount = notifyDepthFirst('mount')
-
-const linkNodes = (el, o) => (o.dom = el, el[NODE] = o)
 
 const createSVG = tag => document.createElementNS('http://www.w3.org/2000/svg', tag)
 
