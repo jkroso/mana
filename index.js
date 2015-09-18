@@ -161,17 +161,13 @@ class Element extends Node {
     const a = this.params
     const dom = this.dom
     for (var key in a) {
-      if (key in b) {
-        if (a[key] != b[key]) setAttribute(dom, key, b[key])
-      } else if (key == 'className') {
-        dom.className = '' /*browser bug workaround*/
-      } else {
-        dom.removeAttribute(key)
-      }
+      if (key in b) continue
+      if (key == 'className') dom.className = '' // browser bug workaround
+      else dom.removeAttribute(key)
     }
 
     for (var key in b) {
-      key in a || setAttribute(dom, key, b[key])
+      if (a[key] != b[key]) setAttribute(dom, key, b[key])
     }
   }
 
