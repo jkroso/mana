@@ -1,6 +1,5 @@
 const escapeHTML = require('escape-html')
 const {RootCursor} = require('cursor')
-const assert = require('assert')
 const equals = require('equals')
 
 const self_closing = new Set([
@@ -241,26 +240,19 @@ class Element extends Node {
 class App extends Element {
   constructor(state, render) {
     super('div', {className: 'app'})
-    this.isRendering = true
     this.redrawScheduled = false
     this.cursor = state instanceof RootCursor ? state : new RootCursor(state)
 
     this.redraw = () => {
-      try {
-        this.redrawScheduled = false
-        cursor = this.cursor // for the JSX function
-        this.isRendering = true
-        const children = toArray(render(this.cursor))
-        cursor = null
-        this.updateChildren(children, this.dom)
-        this.children = children
-      } finally {
-        this.isRendering = false
-      }
+      this.redrawScheduled = false
+      cursor = this.cursor // for the JSX function
+      const children = toArray(render(this.cursor))
+      cursor = null
+      this.updateChildren(children, this.dom)
+      this.children = children
     }
 
     this.cursor.addListener(() => {
-      assert(!this.isRendering, 'redraw requested while rendering')
       if (this.redrawScheduled) return
       this.redrawScheduled = true
       requestAnimationFrame(this.redraw)
@@ -268,7 +260,6 @@ class App extends Element {
 
     this.children = toArray(render(cursor = this.cursor))
     cursor = null
-    this.isRendering = false
   }
 
   mount(el) {
