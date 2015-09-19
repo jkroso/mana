@@ -14,20 +14,22 @@ class Node {
   remove(dom) {
     dom.parentNode.removeChild(dom)
   }
-  replace(next, dom) {
-    dom.parentElement.replaceChild(next.toDOM(), dom)
-    return next
+  replace(next, oldDom) {
+    const dom = next.toDOM()
+    oldDom.parentElement.replaceChild(dom, oldDom)
+    return dom
   }
 }
 
 class Text extends Node {
   constructor(text) {
     super()
-    this.dom = null
     this.text = String(text)
   }
   toDOM() {
-    return this.dom = document.createTextNode(this.text)
+    const dom = document.createTextNode(this.text)
+    dom[NODE] = this
+    return dom
   }
   update(next, dom) {
     if (next.constructor != Text) return this.replace(next, dom)
@@ -42,7 +44,6 @@ class Text extends Node {
 class Element extends Node {
   constructor(tagName, params, children, events) {
     super()
-    this.dom = null
     this.tagName = tagName
     this.params = params || {}
     this.children = children || []
@@ -85,28 +86,9 @@ class Element extends Node {
    * @param  {String} type
    */
 
-  notify(type, event) {
+  notify(type, event, dom) {
     var fn = this.events[type]
-    fn && fn.call(this, event, this)
-  }
-
-  /**
-   * Invoke an event on this node and all its parents
-   *
-   * @param  {String} type
-   * @param  {event} [event]
-   */
-
-  emit(type, event) {
-    var el = this.dom
-    var node = this
-    while (node) {
-      node.notify(type, event)
-      if (event && event.cancelBubble) break
-      el = el.parentNode
-      if (el == null) break
-      node = el[NODE]
-    }
+    fn && fn(event, this, dom)
   }
 
   /**
@@ -148,7 +130,8 @@ class Element extends Node {
     this.updateParams(next.params, dom)
     this.updateChildren(next.children, dom)
     this.updateEvents(next.events, dom)
-    return dom[NODE] = next
+    dom[NODE] = next
+    return dom
   }
 
   updateParams(b, dom) {
@@ -181,7 +164,7 @@ class Element extends Node {
     while (l < bChildren.length) {
       var child = bChildren[l++]
       dom.appendChild(child.toDOM())
-      notifyMount(child)
+      notifyDeep('mount', child)
     }
   }
 
@@ -195,24 +178,20 @@ class Element extends Node {
   }
 
   remove(dom) {
-    if (!dom) dom = this.dom
-    this.dom = dom
-    notifyUnmount(this)
+    notifyDeep('unmount', dom)
     super.remove(dom)
   }
 
   replace(next, dom) {
-    this.dom = dom
-    notifyUnmount(this)
-    super.replace(next, dom)
-    next.dom = dom
-    notifyMount(next)
-    return next
+    notifyDeep('unmount', dom)
+    dom = super.replace(next, dom)
+    notifyDeep('mount', dom)
+    return dom
   }
 
   mount(el) {
     adoptNewDOMElement(this, el)
-    notifyMount(this)
+    notifyDeep('mount', el)
   }
 
   toString() {
@@ -275,8 +254,13 @@ class App extends Element {
   }
 
   mountIn(container) {
-    container.appendChild(this.toDOM())
-    notifyMount(this)
+    this.dom = this.toDOM()
+    container.appendChild(this.dom)
+    notifyDeep('mount', this.dom)
+  }
+
+  remove() {
+    if (this.dom) super.remove(this.dom)
   }
 }
 
@@ -322,21 +306,21 @@ const notify = e => e.target[NODE].notify(e.type, e)
 
 const adoptNewDOMElement = (node, dom) => {
   dom[NODE] = node
-  node.dom = dom
   var attrs = node.params
   for (var key in attrs) setAttribute(dom, key, attrs[key])
   node.children.forEach(child => dom.appendChild(child.toDOM()))
   node.updateEvents(node.events)
 }
 
-const notifyDepthFirst = event => function recur(node){
-  if (!node.children) return
-  node.children.forEach(recur)
-  node.notify(event, node)
+const notifyDeep = (event, dom) => {
+  const {children} = dom
+  if (!children) return
+  const node = dom[NODE]
+  for (var i = 0; i < children.length; i++) {
+    notifyDeep(event, children[i])
+  }
+  node.notify(event, node, dom)
 }
-
-const notifyUnmount = notifyDepthFirst('unmount')
-const notifyMount = notifyDepthFirst('mount')
 
 const createSVG = tag => document.createElementNS('http://www.w3.org/2000/svg', tag)
 
@@ -496,7 +480,7 @@ const dispatchEvent = e => {
   var {target,type} = e
   while (target) {
     var node = target[NODE]
-    if (node) node.notify(type, e)
+    if (node) node.notify(type, e, target)
     if (event.cancelBubble) break
     target = target.parentNode
   }
