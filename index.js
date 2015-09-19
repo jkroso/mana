@@ -111,6 +111,24 @@ class Element extends Node {
   }
 
   /**
+   * Invoke an event on this node and all its parents
+   *
+   * @param  {String} type
+   * @param  {event} [event]
+   */
+
+  emit(type, dom, event) {
+    var node = this
+    while (node) {
+      node.notify(type, event, dom)
+      if (event && event.cancelBubble) break
+      dom = dom.parentNode
+      if (dom == null) break
+      node = dom[NODE]
+    }
+  }
+
+  /**
    * Create a native DOM node from a virtual node
    * @return {DOMElement}
    */
@@ -300,8 +318,8 @@ class Thunk extends Node {
   get children() {
     return this.call().children
   }
-  notify(type) {
-    this.call().notify(type, this.call())
+  notify(type, dom) {
+    this.call().notify(type, this.call(), dom)
   }
 }
 
