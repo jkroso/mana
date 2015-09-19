@@ -86,9 +86,9 @@ class Element extends Node {
    * @param  {String} type
    */
 
-  notify(type, event, dom) {
+  notify(type, data, dom) {
     var fn = this.events[type]
-    fn && fn(event, this, dom)
+    fn && fn(data, this, dom)
   }
 
   /**
@@ -162,8 +162,8 @@ class Element extends Node {
 
     // append extras
     while (l < bChildren.length) {
-      var child = bChildren[l++]
-      dom.appendChild(child.toDOM())
+      var child = bChildren[l++].toDOM()
+      dom.appendChild(child)
       notifyDeep('mount', child)
     }
   }
@@ -234,7 +234,7 @@ class App extends Element {
         this.isRendering = true
         const children = toArray(render(this.cursor))
         cursor = null
-        this.updateChildren(children)
+        this.updateChildren(children, this.dom)
         this.children = children
       } finally {
         this.isRendering = false
@@ -251,6 +251,11 @@ class App extends Element {
     this.children = toArray(render(cursor = this.cursor))
     cursor = null
     this.isRendering = false
+  }
+
+  mount(el) {
+    this.dom = el
+    super.mount(el)
   }
 
   mountIn(container) {
@@ -277,10 +282,10 @@ class Thunk extends Node {
   toDOM() {
     return this.call().toDOM()
   }
-  update(next) {
-    if (!(next instanceof Thunk)) return this.node.update(next)
+  update(next, dom) {
+    if (!(next instanceof Thunk)) return this.node.update(next, dom)
     if (this.isEqual(next)) return this
-    this.node.update(next.call())
+    this.node.update(next.call(), dom)
     return next
   }
   remove(dom) {
@@ -302,24 +307,24 @@ class Thunk extends Node {
 
 const add = (a, b) => a + b
 
-const notify = e => e.target[NODE].notify(e.type, e)
+const notify = e => e.target[NODE].notify(e.type, e, e.target)
 
 const adoptNewDOMElement = (node, dom) => {
   dom[NODE] = node
   var attrs = node.params
   for (var key in attrs) setAttribute(dom, key, attrs[key])
   node.children.forEach(child => dom.appendChild(child.toDOM()))
-  node.updateEvents(node.events)
+  node.updateEvents(node.events, dom)
 }
 
 const notifyDeep = (event, dom) => {
   const {children} = dom
-  if (!children) return
   const node = dom[NODE]
+  if (!node || !children) return
   for (var i = 0; i < children.length; i++) {
     notifyDeep(event, children[i])
   }
-  node.notify(event, node, dom)
+  node.notify(event, dom, dom)
 }
 
 const createSVG = tag => document.createElementNS('http://www.w3.org/2000/svg', tag)
