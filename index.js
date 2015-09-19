@@ -293,7 +293,10 @@ class Thunk extends Node {
   }
   update(next, dom) {
     if (!(next instanceof Thunk)) return this.node.update(next, dom)
-    if (this.isEqual(next)) return this
+    if (this.isEqual(next)) {
+      next.node = this.node
+      return dom
+    }
     this.node.update(next.call(), dom)
     return next
   }
@@ -310,7 +313,7 @@ class Thunk extends Node {
     return this.call().children
   }
   notify(type, dom) {
-    this.call().notify(type, this.call(), dom)
+    this.call().notify(type, this.node, dom)
   }
 }
 
