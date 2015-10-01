@@ -403,7 +403,8 @@ const attrWhiteList = [
   "markerStart", "mask", "opacity", "overflow", "pointerEvents", "shapeRendering", "stopColor",
   "stopOpacity", "strokeDasharray", "strokeDashoffset", "strokeLinecap", "strokeLinejoin",
   "strokeMiterlimit", "strokeOpacity", "strokeWidth", "stroke", "textAnchor", "textDecoration",
-  "textRendering", "unicodeBidi", "visibility", "wordSpacing", "writingMode", "viewBox"
+  "textRendering", "unicodeBidi", "visibility", "wordSpacing", "writingMode", "viewBox",
+  "contentEditable"
 ].reduce((o,k) => {o[k] = true; return o}, {})
 
 /**
