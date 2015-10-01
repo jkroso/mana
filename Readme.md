@@ -1,8 +1,8 @@
 # Mana
 
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/jkroso/mana?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+See the [design wiki](https://www.notion.so/FvxeqQWVRJeop) if you have questions about mana's implementation or would like to share ideas.
 
-A virtual DOM based framework which combines all the best ideas I know to enable me to create the prettiest GUI code possible right now using JavaScript
+Mana is a virtual DOM based framework which combines all the best ideas I know to enable me to create the prettiest GUI code possible right now using JavaScript
 
 - No components; no need
 - No private state; its weird
