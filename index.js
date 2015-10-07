@@ -63,7 +63,9 @@ class Element extends Node {
         this.listen(key.substring(2).toLowerCase(), value)
       } else if (key == 'class') {
         if (typeof value == 'string') {
-          params.className = value
+          params.className = params.className
+            ? params.className + ' ' + value
+            : value
           continue
         }
         for (key in value) if (value[key]) {
