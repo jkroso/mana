@@ -10,6 +10,7 @@ const self_closing = new Set([
 const NODE = Symbol('node')
 
 class Node {
+  get id() { return this.params.id }
   remove(dom) {
     dom.parentNode.removeChild(dom)
   }
@@ -146,6 +147,7 @@ class Element extends Node {
     if (this === next) return next
     if (this.constructor != next.constructor) return this.replace(next, dom)
     if (this.tagName != next.tagName) return this.replace(next, dom)
+    if (this.id !== next.id) return this.replace(next, dom)
     this.updateParams(next.params, dom)
     this.updateChildren(next.children, dom)
     this.updateEvents(next.events, dom)

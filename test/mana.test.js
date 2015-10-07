@@ -1,4 +1,5 @@
 const {JSX,NODE,Text,Element,App,Thunk} = require('..')
+const {spy} = require('simple-spy')
 const event = require('dom-event')
 
 const eql = (a,b) => a.toDOM().outerHTML == b.toDOM().outerHTML
@@ -115,6 +116,17 @@ describe('Problem areas', () => {
       let dom = UI1.toDOM()
       UI1.update(UI2, dom)
       assert(dom.outerHTML == UI2)
+    })
+  })
+
+  describe('lifecycle hooks', () => {
+    it('popping from the front of a list', () => {
+      let N = (params) => <div onUnMount={spy(() => null)}/>.mergeParams(params)
+      let UI1 = <div><N id="1"/><N id="2"/></div>
+      let UI2 = <div><N id="2"/></div>
+      let dom = UI1.toDOM()
+      UI1.update(UI2, dom)
+      assert(UI1.children[0].events.unmount.callCount == 1)
     })
   })
 })
