@@ -1,4 +1,4 @@
-import {JSX,NODE,Text,Element,App,Thunk} from '..'
+import {JSX,NODE,Text,Element,App} from '..'
 import {spy} from 'simple-spy'
 import event from 'dom-event'
 
@@ -52,17 +52,6 @@ describe('JSX', () => {
                JSX('h1', null, [JSX('a', {href:"#"}, ['a'])])))
     assert(eql(<ul>{['a', 'b', 'c']}</ul>,
                JSX('ul', null, ['a', 'b', 'c'])))
-  })
-
-  it('Component defined queries', () => {
-    class Component extends Thunk {
-      render({cursor}) {
-        return <span>{cursor.value}</span>
-      }
-    }
-    Component.prototype.query = 'some-path'
-    const app = new App(new Map([['some-path', 1]]), () => <Component/>)
-    assert(eql(app.children[0], <span>1</span>))
   })
 })
 

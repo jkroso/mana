@@ -249,9 +249,7 @@ class App extends Element {
 
     this.redraw = () => {
       this.redrawScheduled = false
-      cursor = this.cursor // for the JSX function
       const children = toArray(render(this.cursor))
-      cursor = null
       this.updateChildren(children, this.dom)
       this.children = children
     }
@@ -262,8 +260,7 @@ class App extends Element {
       requestAnimationFrame(this.redraw)
     })
 
-    this.children = toArray(render(cursor = this.cursor))
-    cursor = null
+    this.children = toArray(render(this.cursor))
   }
 
   mount(el) {
@@ -462,13 +459,7 @@ const serializeStyle = style => {
 
 const JSX = (type, params, children) => {
   if (children) children = children.reduce(toNodes, [])
-  if (type.prototype instanceof Node) {
-    if (!params || params.cursor === undefined && type.prototype.query) {
-      params = params || {}
-      params.cursor = parseCursor(type.prototype.query)
-    }
-    return new type(params, children)
-  }
+  if (type.prototype instanceof Node) return new type(params, children)
   return typeof type == 'string'
     ? new Element(type, {}, children).mergeParams(params)
     : type(params, children)
@@ -481,11 +472,6 @@ const toNodes = (nodes, val) => {
   else nodes.push(val)
   return nodes
 }
-
-// the RootCursor of the App currently being rendered
-var cursor = null
-
-const parseCursor = path => cursor.getIn(...path.split('/').filter(Boolean))
 
 const toArray = v => Array.isArray(v) ? v : [v]
 
