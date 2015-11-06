@@ -1,6 +1,6 @@
-const escapeHTML = require('escape-html')
-const {RootCursor} = require('cursor')
-const equals = require('equals')
+import escapeHTML from 'escape-html'
+import {RootCursor} from 'cursor'
+import equals from 'equals'
 
 const self_closing = new Set([
   'area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input',

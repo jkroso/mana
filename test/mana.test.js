@@ -1,6 +1,6 @@
-const {JSX,NODE,Text,Element,App,Thunk} = require('..')
-const {spy} = require('simple-spy')
-const event = require('dom-event')
+import {JSX,NODE,Text,Element,App,Thunk} from '..'
+import {spy} from 'simple-spy'
+import event from 'dom-event'
 
 const eql = (a,b) => a.toDOM().outerHTML == b.toDOM().outerHTML
 
