@@ -7,9 +7,9 @@ const self_closing = new Set([
   'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'
 ])
 
-const NODE = Symbol('node')
+export const NODE = Symbol('node')
 
-class Node {
+export class Node {
   get id() { return this.params.id }
   remove(dom) {
     dom.parentNode.removeChild(dom)
@@ -21,7 +21,7 @@ class Node {
   }
 }
 
-class Text extends Node {
+export class Text extends Node {
   constructor(text) {
     super()
     this.text = String(text)
@@ -41,7 +41,7 @@ class Text extends Node {
   }
 }
 
-class Element extends Node {
+export class Element extends Node {
   constructor(tagName, params, children, events) {
     super()
     this.tagName = tagName
@@ -241,7 +241,7 @@ class Element extends Node {
  * @return {<div class='app'/>}
  */
 
-class App extends Element {
+export class App extends Element {
   constructor(state, render) {
     super('div', {className: 'app'})
     this.redrawScheduled = false
@@ -279,18 +279,39 @@ class App extends Element {
   }
 }
 
-class Thunk extends Node {
+class ProxyNode extends Node {
+  call() {
+    return this.node ? this.node : this.node = this.toNode()
+  }
+  toDOM() {
+    return this.call().toDOM()
+  }
+  remove(dom) {
+    return this.call().remove(dom)
+  }
+  replace(next, dom) {
+    return this.call().replace(next, dom)
+  }
+  notify(type, dom) {
+    this.call().notify(type, this.node, dom)
+  }
+  get children() {
+    return this.call().children
+  }
+}
+
+/**
+ * Thunks provide an efficient form of memoiziation
+ */
+
+export class Thunk extends ProxyNode {
   constructor(...args) {
     super()
     this.arguments = args
     this.node = null
   }
-  call() {
-    if (this.node) return this.node
-    return this.node = this.render(...this.arguments)
-  }
-  toDOM() {
-    return this.call().toDOM()
+  toNode() {
+    return this.render(...this.arguments)
   }
   update(next, dom) {
     if (!(next instanceof Thunk)) return this.node.update(next, dom)
@@ -301,20 +322,69 @@ class Thunk extends Node {
     this.node.update(next.call(), dom)
     return next
   }
-  remove(dom) {
-    return this.call().remove(dom)
-  }
-  replace(next, dom) {
-    return this.call().replace(next, dom)
-  }
   isEqual(next) {
     return equals(this.arguments, next.arguments)
   }
-  get children() {
-    return this.call().children
+}
+
+export const STATE = Symbol('state')
+
+/**
+ * Components provide local state
+ */
+
+export class Component extends ProxyNode {
+  constructor(params, children) {
+    super()
+    this.params = params
+    this._children = children
+    this.instances = []
+    this[STATE] = undefined
+    this.redrawScheduled = false
+    this.redraw = () => {
+      this.redrawScheduled = false
+      const next = this.toNode()
+      for (var dom of this.instances) {
+        this.node.update(next, dom)
+      }
+      this.node = next
+    }
   }
-  notify(type, dom) {
-    this.call().notify(type, this.node, dom)
+  get state() {
+    return this[STATE]
+  }
+  set state(value) {
+    this[STATE] = value
+    this.requestRedraw()
+  }
+  setState(vals) {
+    for (var k in vals) this[STATE][k] = vals[k]
+    this.requestRedraw()
+  }
+  requestRedraw() {
+    if (this.redrawScheduled || !this.instances.length) return
+    this.redrawScheduled = true
+    requestAnimationFrame(this.redraw)
+  }
+  toNode() {
+    const node = this.render(this.params, this._children, this.state)
+    node.mergeParams({
+      onMount: dom => this.instances.push(dom),
+      onUnMount: dom => {
+        const i = this.instances.indexOf(dom)
+        if (i >= 0) this.instances.splice(i, 1)
+      }
+    })
+    return node
+  }
+  update(next, dom) {
+    if (next instanceof Component) {
+      if (next[STATE] === undefined) next[STATE] = this[STATE]
+      next.instances = this.instances
+      this.node.update(next.call(), dom)
+      return next
+    }
+    return this.node.update(next, dom)
   }
 }
 
@@ -457,7 +527,7 @@ const serializeStyle = style => {
  * @return {Element}
  */
 
-const JSX = (type, params, children) => {
+export const JSX = (type, params, children) => {
   if (children) children = children.reduce(toNodes, [])
   if (type.prototype instanceof Node) return new type(params, children)
   return typeof type == 'string'
@@ -524,5 +594,3 @@ const dispatchEvent = e => {
   'focusin',
   'focusout'
 ].forEach(event => window.addEventListener(event, dispatchEvent, true))
-
-export {Node,Text,Element,App,Thunk,JSX,NODE}
