@@ -564,7 +564,7 @@ const dispatchEvent = e => {
   }
 }
 
-;[
+if (typeof window != 'undefined') [
   'click',
   'mousedown',
   'mouseup',
