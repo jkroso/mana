@@ -6,7 +6,6 @@
   "dependencies": {
     "cursor": "jsiom/cursor",
     "escape-html": "1",
-    "babelify": "*",
     "equals": "1"
   },
   "devDependencies": {
@@ -16,9 +15,6 @@
     "hydro-html": "*",
     "hydro-bdd": "*",
     "hydro": "*"
-  },
-  "browserify": {
-    "transform": [["babelify", {"jsxPragma": "JSX","stage":0}]]
   },
   "transpile": [["*.js", "!sourcegraph/babel->js"]],
   "repository": "git://github.com/jkroso/mana.git",
