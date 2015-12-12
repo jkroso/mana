@@ -230,55 +230,6 @@ export class Element extends Node {
   }
 }
 
-/**
- * An element which automatically re-renders its children
- * when its state changes. It also wraps `state` in a cursor to
- * make it easy for components to notify it when they manipulate the
- * `state`
- *
- * @param {Any} state
- * @param {Function} render
- * @return {<div class='app'/>}
- */
-
-export class App extends Element {
-  constructor(state, render) {
-    super('div', {className: 'app'})
-    this.redrawScheduled = false
-    this.cursor = state instanceof RootCursor ? state : new RootCursor(state)
-
-    this.redraw = () => {
-      this.redrawScheduled = false
-      const children = toArray(render(this.cursor))
-      this.updateChildren(children, this.dom)
-      this.children = children
-    }
-
-    this.cursor.addListener(() => {
-      if (this.redrawScheduled) return
-      this.redrawScheduled = true
-      requestAnimationFrame(this.redraw)
-    })
-
-    this.children = toArray(render(this.cursor))
-  }
-
-  mount(el) {
-    this.dom = el
-    super.mount(el)
-  }
-
-  mountIn(container) {
-    this.dom = this.toDOM()
-    container.appendChild(this.dom)
-    notifyDeep('mount', this.dom)
-  }
-
-  remove() {
-    if (this.dom) super.remove(this.dom)
-  }
-}
-
 class ProxyNode extends Node {
   call() {
     return this.node ? this.node : this.node = this.toNode()
@@ -297,6 +248,52 @@ class ProxyNode extends Node {
   }
   get children() {
     return this.call().children
+  }
+}
+
+/**
+ * An element which automatically re-renders its children
+ * when its state changes. It also wraps `state` in a cursor to
+ * make it easy for components to notify it when they manipulate the
+ * `state`
+ *
+ * @param {Any} state
+ * @param {Function} render
+ * @return {<div class='app'/>}
+ */
+
+export class App extends ProxyNode {
+  constructor(state, render) {
+    super()
+    this.redrawScheduled = false
+    this.cursor = state instanceof RootCursor ? state : new RootCursor(state)
+
+    this.redraw = () => {
+      this.redrawScheduled = false
+      const next = render(this.cursor)
+      this.node.update(next, this.dom)
+      this.node = next
+    }
+
+    this.cursor.addListener(() => {
+      if (this.redrawScheduled) return
+      this.redrawScheduled = true
+      requestAnimationFrame(this.redraw)
+    })
+
+    this.node = render(this.cursor)
+  }
+  mount(el) {
+    this.dom = el
+    super.mount(el)
+  }
+  mountIn(container) {
+    this.dom = this.toDOM()
+    container.appendChild(this.dom)
+    notifyDeep('mount', this.dom)
+  }
+  remove() {
+    if (this.dom) super.remove(this.dom)
   }
 }
 
@@ -542,8 +539,6 @@ const toNodes = (nodes, val) => {
   else nodes.push(val)
   return nodes
 }
-
-const toArray = v => Array.isArray(v) ? v : [v]
 
 /**
  * Hack so we know when its been called

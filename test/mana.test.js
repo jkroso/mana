@@ -35,11 +35,11 @@ describe('App', () => {
   it('mountIn', () => {
     app.mountIn(document.body)
     assert(app.dom.parentNode == document.body)
-    assert(app.dom.outerHTML == '<div class="app"><div class="name">jkroso</div></div>')
+    assert(app.dom.outerHTML == '<div class="name">jkroso</div>')
   })
 
   it('event dispatcher', () => {
-    app.dom.firstChild.dispatchEvent(event('click'))
+    app.dom.dispatchEvent(event('click'))
     assert(app.dom.parentNode == null)
   })
 })
