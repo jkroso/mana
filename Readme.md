@@ -2,14 +2,12 @@
 
 See the [design wiki](https://www.notion.so/FvxeqQWVRJeop) if you have questions about mana's implementation or would like to share ideas.
 
-Mana is a virtual DOM based framework which combines all the best ideas I know to enable me to create the prettiest GUI code possible right now using JavaScript
+Mana is a virtual DOM based library which combines all the best ideas I know to enable me to create the prettiest GUI code possible right now using JavaScript
 
-- No components; no need
-- No private state; its weird
+- Designed for the global state + cursors architecture
+- Also supports components with local state
 - Mount/UnMount hooks; to integrate with legacy code that nobody wants to rewrite, like google maps. Also because HACKS
 - Extensible; haha na not really, I tried though
-- Designed for the global state + cursors architecture (Experimental)
-- Can render onto an element, instead of into; for more control
 - Supports JSX syntax
 
 ## Installation
