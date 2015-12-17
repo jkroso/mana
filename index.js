@@ -34,7 +34,7 @@ export class Text extends Node {
   update(next, dom) {
     if (next.constructor != Text) return this.replace(next, dom)
     if (this.text != next.text) dom.nodeValue = next.text
-    return next
+    return dom
   }
   toString() {
     return this.text
@@ -271,7 +271,7 @@ export class App extends ProxyNode {
     this.redraw = () => {
       this.redrawScheduled = false
       const next = render(this.cursor)
-      this.node.update(next, this.dom)
+      this.dom = this.node.update(next, this.dom)
       this.node = next
     }
 
@@ -317,7 +317,7 @@ export class Thunk extends ProxyNode {
       return dom
     }
     this.node.update(next.call(), dom)
-    return next
+    return dom
   }
   isEqual(next) {
     return equals(this.arguments, next.arguments)
@@ -378,8 +378,7 @@ export class Component extends ProxyNode {
     if (next instanceof Component) {
       if (next[STATE] === undefined) next[STATE] = this[STATE]
       next.instances = this.instances
-      this.node.update(next.call(), dom)
-      return next
+      return this.node.update(next.call(), dom)
     }
     return this.node.update(next, dom)
   }
