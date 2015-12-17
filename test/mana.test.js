@@ -1,6 +1,7 @@
 import {JSX,NODE,Text,Element,App} from '..'
 import {spy} from 'simple-spy'
 import event from 'dom-event'
+import assert from 'assert'
 
 const eql = (a,b) => a.toDOM().outerHTML == b.toDOM().outerHTML
 
