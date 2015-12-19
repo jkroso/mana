@@ -355,10 +355,6 @@ export class Component extends ProxyNode {
     this[STATE] = value
     this.requestRedraw()
   }
-  setState(vals) {
-    for (var k in vals) this[STATE][k] = vals[k]
-    this.requestRedraw()
-  }
   requestRedraw() {
     if (this.redrawScheduled || !this.instances.length) return
     this.redrawScheduled = true
