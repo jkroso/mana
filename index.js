@@ -341,8 +341,9 @@ export class Component extends ProxyNode {
     this.redraw = () => {
       this.redrawScheduled = false
       const next = this.toNode()
-      for (var dom of this.instances) {
-        this.node.update(next, dom)
+      const doms = this.instances
+      for (var i = 0, len = doms.length; i < len; i++) {
+        doms[i] = this.node.update(next, doms[i])
       }
       this.node = next
     }
