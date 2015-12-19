@@ -361,7 +361,7 @@ export class Component extends ProxyNode {
     this.requestRedraw()
   }
   requestRedraw() {
-    if (this.redrawScheduled || !this.paths.length) return
+    if (this.redrawScheduled) return
     this.redrawScheduled = true
     requestAnimationFrame(this.redraw)
   }
