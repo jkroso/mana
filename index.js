@@ -333,8 +333,7 @@ export const STATE = Symbol('state')
 export class Component extends ProxyNode {
   constructor(params, children) {
     super()
-    this.params = params
-    this._children = children
+    this.arguments = [params, children]
     this.instances = []
     this[STATE] = undefined
     this.redrawScheduled = false
@@ -361,7 +360,7 @@ export class Component extends ProxyNode {
     requestAnimationFrame(this.redraw)
   }
   toNode() {
-    const node = this.render(this.params, this._children, this.state)
+    const node = this.render(this.arguments[0], this.arguments[1], this.state)
     node.mergeParams({
       onMount: dom => this.instances.push(dom),
       onUnMount: dom => {
