@@ -246,6 +246,10 @@ class ProxyNode extends Node {
   notify(type, dom) {
     this.call().notify(type, this.node, dom)
   }
+  mergeParams(params) {
+    this.call().mergeParams(params)
+    return this
+  }
   get children() {
     return this.call().children
   }
@@ -271,7 +275,7 @@ export class App extends ProxyNode {
     this.redraw = () => {
       this.redrawScheduled = false
       const next = render(this.cursor)
-      this.dom = this.node.update(next, this.dom)
+      this.node.update(next, getNode(this.path))
       this.node = next
     }
 
@@ -281,7 +285,9 @@ export class App extends ProxyNode {
       requestAnimationFrame(this.redraw)
     })
 
-    this.node = render(this.cursor)
+    this.node = render(this.cursor).mergeParams({
+      onMount: dom => this.path = domPath(dom)
+    })
   }
   mount(el) {
     this.dom = el
@@ -334,15 +340,15 @@ export class Component extends ProxyNode {
   constructor(params, children) {
     super()
     this.arguments = [params, children]
-    this.instances = []
+    this.paths = []
     this[STATE] = undefined
     this.redrawScheduled = false
     this.redraw = () => {
       this.redrawScheduled = false
       const next = this.toNode()
-      const doms = this.instances
-      for (var i = 0, len = doms.length; i < len; i++) {
-        doms[i] = this.node.update(next, doms[i])
+      const paths = this.paths
+      for (var i = 0, len = paths.length; i < len; i++) {
+        this.node.update(next, getNode(paths[i]))
       }
       this.node = next
     }
@@ -355,17 +361,22 @@ export class Component extends ProxyNode {
     this.requestRedraw()
   }
   requestRedraw() {
-    if (this.redrawScheduled || !this.instances.length) return
+    if (this.redrawScheduled || !this.paths.length) return
     this.redrawScheduled = true
     requestAnimationFrame(this.redraw)
   }
   toNode() {
     const node = this.render(this.arguments[0], this.arguments[1], this.state)
     node.mergeParams({
-      onMount: dom => this.instances.push(dom),
+      onMount: dom => {
+        this.paths.push(domPath(dom))
+      },
       onUnMount: dom => {
-        const i = this.instances.indexOf(dom)
-        if (i >= 0) this.instances.splice(i, 1)
+        const path = domPath(dom)
+        const paths = this.paths
+        for (var i = 0, len = paths.length; i < len; i++) {
+          if (equals(path, paths[i])) return paths.splice(i, 1)
+        }
       }
     })
     return node
@@ -373,11 +384,38 @@ export class Component extends ProxyNode {
   update(next, dom) {
     if (next instanceof Component) {
       if (next[STATE] === undefined) next[STATE] = this[STATE]
-      next.instances = this.instances
+      next.paths = this.paths
       return this.node.update(next.call(), dom)
     }
     return this.node.update(next, dom)
   }
+}
+
+const domPath = dom => {
+  const indices = []
+  while (true) {
+    indices.push(indexOf(dom))
+    if (dom.parentNode === document.body) break
+    dom = dom.parentNode
+  }
+  return indices
+}
+
+const indexOf = dom => {
+  var i = 0
+  while (dom.previousSibling) {
+    dom = dom.previousSibling
+    i += 1
+  }
+  return i
+}
+
+const getNode = path => {
+  var node = document.body
+  for (let i = 0, len = path.length; i < len; i++) {
+    node = node.childNodes[path[i]]
+  }
+  return node
 }
 
 const add = (a, b) => a + b
