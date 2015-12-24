@@ -250,6 +250,9 @@ class ProxyNode extends Node {
     this.call().mergeParams(params)
     return this
   }
+  mount(el) {
+    this.call().mount(el)
+  }
   get children() {
     return this.call().children
   }
