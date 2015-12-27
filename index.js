@@ -215,6 +215,13 @@ export class Element extends Node {
     notifyDeep('mount', el)
   }
 
+  mountIn(container) {
+    const dom = this.toDOM()
+    container.appendChild(dom)
+    notifyDeep('mount', dom)
+    return dom
+  }
+
   toString() {
     var html = '<' + this.tagName
     for (var key in this.params) {
