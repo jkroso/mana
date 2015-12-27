@@ -285,7 +285,7 @@ export class App extends ProxyNode {
     this.redraw = () => {
       this.redrawScheduled = false
       const next = render(this.cursor)
-      this.node.update(next, getNode(this.path))
+      this.node.update(next, getDOM(this.path))
       this.node = next
     }
 
@@ -358,7 +358,7 @@ export class Component extends ProxyNode {
       const next = this.toNode()
       const paths = this.paths
       for (var i = 0, len = paths.length; i < len; i++) {
-        this.node.update(next, getNode(paths[i]))
+        this.node.update(next, getDOM(paths[i]))
       }
       this.node = next
     }
@@ -420,7 +420,7 @@ const indexOf = dom => {
   return i
 }
 
-const getNode = path => {
+const getDOM = path => {
   var node = document.body
   for (let i = 0, len = path.length; i < len; i++) {
     node = node.childNodes[path[i]]
