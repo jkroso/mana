@@ -260,8 +260,8 @@ class ProxyNode extends Node {
   notify(type, dom) {
     this.call().notify(type, this.node, dom)
   }
-  mergeParams(params) {
-    this.call().mergeParams(params)
+  assoc(params) {
+    this.call().assoc(params)
     return this
   }
   mount(el) {
@@ -302,7 +302,7 @@ export class App extends ProxyNode {
       requestAnimationFrame(this.redraw)
     })
 
-    this.node = render(this.cursor).mergeParams({
+    this.node = render(this.cursor).assoc({
       onMount: dom => this.path = domPath(dom)
     })
   }
@@ -383,20 +383,20 @@ export class Component extends ProxyNode {
     requestAnimationFrame(this.redraw)
   }
   toNode() {
-    const node = this.render(this.arguments[0], this.arguments[1], this.state)
-    node.mergeParams({
-      onMount: dom => {
-        this.paths.push(domPath(dom))
-      },
-      onUnMount: dom => {
-        const path = domPath(dom)
-        const paths = this.paths
-        for (var i = 0, len = paths.length; i < len; i++) {
-          if (equals(path, paths[i])) return paths.splice(i, 1)
+    return this
+      .render(this.arguments[0], this.arguments[1], this.state)
+      .assoc({
+        onMount: dom => {
+          this.paths.push(domPath(dom))
+        },
+        onUnMount: dom => {
+          const path = domPath(dom)
+          const paths = this.paths
+          for (var i = 0, len = paths.length; i < len; i++) {
+            if (equals(path, paths[i])) return paths.splice(i, 1)
+          }
         }
-      }
-    })
-    return node
+      })
   }
   update(next, dom) {
     if (next instanceof Component) {
