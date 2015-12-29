@@ -51,10 +51,17 @@ export class Element extends Node {
   }
 
   /**
-   * Merge raw params onto this.params and this.events
-   *
-   * @param {Object} params
-   */
+  * Merge raw params onto a copy of this
+  *
+  * @param {Object} params
+  */
+
+  assoc(params) {
+    const clone = Object.create(this)
+    clone.params = Object.create(this.params)
+    clone.events = Object.create(this.events)
+    return clone.mergeParams(params)
+  }
 
   mergeParams(parameters) {
     var params = this.params
