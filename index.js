@@ -261,7 +261,7 @@ class ProxyNode extends Node {
     this.call().notify(type, this.node, dom)
   }
   assoc(params) {
-    this.call().assoc(params)
+    this.node = this.call().assoc(params)
     return this
   }
   mount(el) {
@@ -296,14 +296,15 @@ export class App extends ProxyNode {
       this.node = next
     }
 
-    this.cursor.addListener(() => {
-      if (this.redrawScheduled) return
-      this.redrawScheduled = true
-      requestAnimationFrame(this.redraw)
-    })
-
     this.node = render(this.cursor).assoc({
-      onMount: dom => this.path = domPath(dom)
+      onMount: dom => {
+        this.path = domPath(dom)
+        this.cursor.addListener(() => {
+          if (this.redrawScheduled) return
+          this.redrawScheduled = true
+          requestAnimationFrame(this.redraw)
+        })
+      }
     })
   }
   mount(el) {
