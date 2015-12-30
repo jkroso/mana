@@ -410,14 +410,6 @@ export class Component extends ProxyNode {
   toNode() {
     return this.render(this.arguments[0], this.arguments[1], this.state)
   }
-  onMount(dom) {
-    this.paths.push(domPath(dom))
-  }
-  onUnMount(dom) {
-    const path = domPath(dom)
-    const i = this.paths.findIndex(p => equals(p, path))
-    if (i >= 0) this.paths.splice(i, 1)
-  }
   update(next, dom) {
     if (next instanceof Component) {
       if (next[STATE] === undefined) next[STATE] = this[STATE]
@@ -425,6 +417,17 @@ export class Component extends ProxyNode {
       return this.node.update(next.call(), dom)
     }
     return this.node.update(next, dom)
+  }
+  // run hooks here so subclasses don't have to call super.onMount etc..
+  runLifeCycleMethod(name, dom) {
+    if (name == 'onMount') {
+      this.paths.push(domPath(dom))
+    } else {
+      const path = domPath(dom)
+      const i = this.paths.findIndex(p => equals(p, path))
+      if (i >= 0) this.paths.splice(i, 1)
+    }
+    super.runLifeCycleMethod(name, dom)
   }
 }
 
