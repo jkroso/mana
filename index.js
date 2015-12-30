@@ -452,9 +452,8 @@ const indexOf = dom => {
 
 const getDOM = path => {
   var node = document.body
-  for (let i = 0, len = path.length; i < len; i++) {
-    node = node.childNodes[path[i]]
-  }
+  var i = path.length
+  while (i--) node = node.childNodes[path[i]]
   return node
 }
 
