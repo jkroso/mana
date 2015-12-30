@@ -5,8 +5,6 @@ See the [design wiki](https://www.notion.so/FvxeqQWVRJeop) if you have questions
 Mana is a virtual DOM based library which combines all the best ideas I know to enable me to create the prettiest GUI code possible right now using JavaScript
 
 - Designed for the global state + cursors architecture
-- Also supports components with local state
-- Mount/UnMount hooks; to integrate with legacy code that nobody wants to rewrite, like google maps. Also because HACKS
 - Extensible; haha na not really, I tried though. To implement a new type you only need to support the interface of a standard node you don't actually need to sub-type it or anything like that. The basic interface is:
   - `x.toDOM()` → native DOM node
   - `x.toString()` → an HTML string
@@ -23,7 +21,7 @@ Mana is a virtual DOM based library which combines all the best ideas I know to 
 then in your app:
 
 ```js
-const {JSX,App} = require('mana')
+import {JSX,App} from 'mana'
 ```
 
 ## API
@@ -36,4 +34,20 @@ new App(state, cursor => {
 }).mountIn(document.body)
 ```
 
-see the [TodoMVC implementation](//github.com/jsiom/todomvc) for a better example
+## Examples
+
+##### [TodoMVC](//github.com/jsiom/todomvc)
+
+IMHO TodoMVC doesn't ask enough of it's implementors be really useful. But it's a nice place to start. It'll show you how easy mana makes the easy stuff.
+
+##### [mana-map](//github.com/jkroso/mana-map)
+
+Demonstrates subclassing a "div" element and using lifecycle hooks to integrate with google maps. This could just as easily of been a subclass of `ProxyNode` but by subclassing `Element` instead I was able to hook into more specific parts of the `update()` method. Namely `updateParams()` and `updateChildren()`. Which makes a slightly more readable and slightly more efficient.
+
+##### [mana-async](//github.com/jkroso/mana-async)
+
+Demonstrates how local state is necessary sometimes and how the abstract class `Component` can make it easy to do cleanly
+
+##### [mana-text-input](//github.com/jsiom/text-input)
+
+Demonstrates how to write a configurable component. Anyone who uses this can add their own classNames, event handlers, etc.. just by specifying them as they would normally. And it will not overwrite the ones used internally by the component. And all text-input does internally to support this is `.mergeParams(params)`
