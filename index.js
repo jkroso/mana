@@ -233,7 +233,7 @@ export class Element extends Node {
   replace(next, dom) {
     this.runLifeCycleMethod('onUnMount', dom)
     dom = super.replace(next, dom)
-    this.runLifeCycleMethod('onMount', dom)
+    next.runLifeCycleMethod('onMount', dom)
     return dom
   }
 
