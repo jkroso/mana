@@ -47,7 +47,7 @@ export class Element extends Node {
   }
 
   /**
-   * Run onMount/onUnmount and forward the message to all children
+   * Run onMount/onUnMount and forward the message to all children
    *
    * @param  {String} name method to Run
    * @param  {DOM} dom
@@ -272,11 +272,11 @@ class ProxyNode extends Node {
     return this.call().toDOM()
   }
   remove(dom) {
-    if (this.onUnmount) this.onUnmount(dom)
+    if (this.onUnMount) this.onUnMount(dom)
     return this.call().remove(dom)
   }
   replace(next, dom) {
-    if (this.onUnmount) this.onUnmount(dom)
+    if (this.onUnMount) this.onUnMount(dom)
     dom = this.call().replace(next, dom)
     if (next.onMount) next.onMount(dom)
     return dom
