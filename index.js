@@ -39,6 +39,7 @@ export class Text extends Node {
   toString() {
     return this.text
   }
+  runLifeCycleMethod(){}
 }
 
 export class Element extends Node {
@@ -51,9 +52,26 @@ export class Element extends Node {
   }
 
   /**
+   * Run onMount/onUnmount and forward the message to all children
+   *
+   * @param  {String} name method to Run
+   * @param  {DOM} dom
+   * @api private
+   */
+
+  runLifeCycleMethod(name, dom) {
+    const {children} = this
+    for (let i = 0, len = children.length; i < len; i++) {
+      children[i].runLifeCycleMethod(name, dom.children[i])
+    }
+    if (this[name]) this[name](dom)
+  }
+
+  /**
   * Merge raw params onto a copy of this
   *
   * @param {Object} params
+  * @api public
   */
 
   assoc(params) {
@@ -92,7 +110,9 @@ export class Element extends Node {
 
   /**
    * Invoke this elements event[type] listener
+   *
    * @param  {String} type
+   * @api public
    */
 
   notify(type, data, dom) {
@@ -105,6 +125,7 @@ export class Element extends Node {
    *
    * @param  {String}   type
    * @param  {Function} fn
+   * @api private
    */
 
   listen(type, fn) {
@@ -124,6 +145,7 @@ export class Element extends Node {
    *
    * @param  {String} type
    * @param  {event} [event]
+   * @api public
    */
 
   emit(type, dom, event) {
@@ -139,7 +161,9 @@ export class Element extends Node {
 
   /**
    * Create a native DOM node from a virtual node
+   *
    * @return {DOMElement}
+   * @api public
    */
 
   toDOM() {
@@ -190,9 +214,10 @@ export class Element extends Node {
 
     // append extras
     while (l < bChildren.length) {
-      var child = bChildren[l++].toDOM()
-      dom.appendChild(child)
-      notifyDeep('mount', child)
+      const child = bChildren[l++]
+      const cdom = child.toDOM()
+      dom.appendChild(cdom)
+      child.runLifeCycleMethod('onMount', cdom)
     }
   }
 
@@ -206,26 +231,26 @@ export class Element extends Node {
   }
 
   remove(dom) {
-    notifyDeep('unmount', dom)
+    this.runLifeCycleMethod('onUnMount', dom)
     super.remove(dom)
   }
 
   replace(next, dom) {
-    notifyDeep('unmount', dom)
+    this.runLifeCycleMethod('onUnMount', dom)
     dom = super.replace(next, dom)
-    notifyDeep('mount', dom)
+    this.runLifeCycleMethod('onMount', dom)
     return dom
   }
 
   mount(el) {
     adoptNewDOMElement(this, el)
-    notifyDeep('mount', el)
+    this.runLifeCycleMethod('onMount', el)
   }
 
   mountIn(container) {
     const dom = this.toDOM()
     container.appendChild(dom)
-    notifyDeep('mount', dom)
+    this.runLifeCycleMethod('onMount', dom)
     return dom
   }
 
@@ -265,10 +290,17 @@ class ProxyNode extends Node {
     return this
   }
   mount(el) {
-    this.call().mount(el)
+    adoptNewDOMElement(this.call(), el)
+    this.runLifeCycleMethod('onMount', el)
   }
-  get children() {
-    return this.call().children
+  mountIn(container) {
+    const dom = this.toDOM()
+    container.appendChild(dom)
+    this.runLifeCycleMethod('onMount', dom)
+  }
+  runLifeCycleMethod(name, dom) {
+    this.call().runLifeCycleMethod(name, dom)
+    if (this[name]) this[name](dom)
   }
 }
 
@@ -288,6 +320,7 @@ export class App extends ProxyNode {
     super()
     this.redrawScheduled = false
     this.cursor = state instanceof RootCursor ? state : new RootCursor(state)
+    this.path = null
 
     this.redraw = () => {
       this.redrawScheduled = false
@@ -296,28 +329,24 @@ export class App extends ProxyNode {
       this.node = next
     }
 
-    this.node = render(this.cursor).assoc({
-      onMount: dom => {
-        this.path = domPath(dom)
-        this.cursor.addListener(() => {
-          if (this.redrawScheduled) return
-          this.redrawScheduled = true
-          requestAnimationFrame(this.redraw)
-        })
-      }
-    })
+    this.listener = () => {
+      if (this.redrawScheduled) return
+      this.redrawScheduled = true
+      requestAnimationFrame(this.redraw)
+    }
+
+    this.node = render(this.cursor)
   }
-  mount(el) {
-    this.dom = el
-    super.mount(el)
+  onMount(dom) {
+    this.path = domPath(dom)
+    this.cursor.addListener(this.listener)
   }
-  mountIn(container) {
-    this.dom = this.toDOM()
-    container.appendChild(this.dom)
-    notifyDeep('mount', this.dom)
+  onUnMount() {
+    this.path = null
+    this.cursor.removeListener(this.listener)
   }
   remove() {
-    if (this.dom) super.remove(this.dom)
+    if (this.dom) super.remove(getDOM(this.path))
   }
 }
 
@@ -384,20 +413,15 @@ export class Component extends ProxyNode {
     requestAnimationFrame(this.redraw)
   }
   toNode() {
-    return this
-      .render(this.arguments[0], this.arguments[1], this.state)
-      .assoc({
-        onMount: dom => {
-          this.paths.push(domPath(dom))
-        },
-        onUnMount: dom => {
-          const path = domPath(dom)
-          const paths = this.paths
-          for (var i = 0, len = paths.length; i < len; i++) {
-            if (equals(path, paths[i])) return paths.splice(i, 1)
-          }
-        }
-      })
+    return this.render(this.arguments[0], this.arguments[1], this.state)
+  }
+  onMount(dom) {
+    this.paths.push(domPath(dom))
+  }
+  onUnMount(dom) {
+    const path = domPath(dom)
+    const i = this.paths.findIndex(p => equals(p, path))
+    if (i >= 0) this.paths.splice(i, 1)
   }
   update(next, dom) {
     if (next instanceof Component) {
@@ -442,20 +466,12 @@ const notify = e => e.target[NODE].notify(e.type, e, e.target)
 
 const adoptNewDOMElement = (node, dom) => {
   dom[NODE] = node
-  var attrs = node.params
-  for (var key in attrs) setAttribute(dom, key, attrs[key])
+  const attrs = node.params
+  for (const key in attrs) {
+    setAttribute(dom, key, attrs[key])
+  }
   node.children.forEach(child => dom.appendChild(child.toDOM()))
   node.updateEvents(node.events, dom)
-}
-
-const notifyDeep = (event, dom) => {
-  const {children} = dom
-  const node = dom[NODE]
-  if (!node || !children) return
-  for (var i = 0; i < children.length; i++) {
-    notifyDeep(event, children[i])
-  }
-  node.notify(event, dom, dom)
 }
 
 const createSVG = tag => document.createElementNS('http://www.w3.org/2000/svg', tag)
