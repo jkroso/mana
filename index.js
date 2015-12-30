@@ -272,10 +272,14 @@ class ProxyNode extends Node {
     return this.call().toDOM()
   }
   remove(dom) {
+    if (this.onUnmount) this.onUnmount(dom)
     return this.call().remove(dom)
   }
   replace(next, dom) {
-    return this.call().replace(next, dom)
+    if (this.onUnmount) this.onUnmount(dom)
+    dom = this.call().replace(next, dom)
+    if (next.onMount) next.onMount(dom)
+    return dom
   }
   notify(type, dom) {
     this.call().notify(type, this.node, dom)
@@ -359,12 +363,9 @@ export class Thunk extends ProxyNode {
     return this.render(...this.arguments)
   }
   update(next, dom) {
-    if (!(next instanceof Thunk)) return this.node.update(next, dom)
-    if (this.isEqual(next)) {
-      next.node = this.node
-      return dom
-    }
-    this.node.update(next.call(), dom)
+    if (!(next instanceof Thunk)) return this.replace(next, dom)
+    if (!this.isEqual(next)) return this.node.update(next.call(), dom)
+    next.node = this.node
     return dom
   }
   isEqual(next) {
