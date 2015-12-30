@@ -418,7 +418,8 @@ export class Component extends ProxyNode {
     }
     return this.node.update(next, dom)
   }
-  // run hooks here so subclasses don't have to call super.onMount etc..
+  // default hooks are inlined here so subclasses don't have to call
+  // super.onMount etc..
   runLifeCycleMethod(name, dom) {
     if (name == 'onMount') {
       this.paths.push(domPath(dom))
