@@ -304,52 +304,6 @@ class ProxyNode extends Node {
 }
 
 /**
- * An element which automatically re-renders its children
- * when its state changes. It also wraps `state` in a cursor to
- * make it easy for components to notify it when they manipulate the
- * `state`
- *
- * @param {Any} state
- * @param {Function} render
- * @return {<div class='app'/>}
- */
-
-export class App extends ProxyNode {
-  constructor(state, render) {
-    super()
-    this.redrawScheduled = false
-    this.cursor = state instanceof RootCursor ? state : new RootCursor(state)
-    this.path = null
-
-    this.redraw = () => {
-      this.redrawScheduled = false
-      const next = render(this.cursor)
-      this.node.update(next, getDOM(this.path))
-      this.node = next
-    }
-
-    this.listener = () => {
-      if (this.redrawScheduled) return
-      this.redrawScheduled = true
-      requestAnimationFrame(this.redraw)
-    }
-
-    this.node = render(this.cursor)
-  }
-  onMount(dom) {
-    this.path = domPath(dom)
-    this.cursor.addListener(this.listener)
-  }
-  onUnMount() {
-    this.path = null
-    this.cursor.removeListener(this.listener)
-  }
-  remove() {
-    if (this.dom) super.remove(getDOM(this.path))
-  }
-}
-
-/**
  * Thunks provide an efficient form of memoiziation
  */
 
@@ -373,19 +327,11 @@ export class Thunk extends ProxyNode {
   }
 }
 
-export const STATE = Symbol('state')
-
-/**
- * Components provide local state
- */
-
-export class Component extends ProxyNode {
-  constructor(params, children) {
+class SelfRerendering extends ProxyNode {
+  constructor() {
     super()
-    this.arguments = [params, children]
-    this.paths = []
-    this[STATE] = undefined
     this.redrawScheduled = false
+    this.paths = []
     this.redraw = () => {
       this.redrawScheduled = false
       const next = this.toNode()
@@ -396,28 +342,10 @@ export class Component extends ProxyNode {
       this.node = next
     }
   }
-  get state() {
-    return this[STATE]
-  }
-  set state(value) {
-    this[STATE] = value
-    this.requestRedraw()
-  }
   requestRedraw() {
     if (this.redrawScheduled) return
     this.redrawScheduled = true
     requestAnimationFrame(this.redraw)
-  }
-  toNode() {
-    return this.render(this.arguments[0], this.arguments[1], this.state)
-  }
-  update(next, dom) {
-    if (next instanceof Component) {
-      if (next[STATE] === undefined) next[STATE] = this[STATE]
-      next.paths = this.paths
-      return this.node.update(next.call(), dom)
-    }
-    return this.replace(next, dom)
   }
   // default hooks are inlined here so subclasses don't have to call
   // super.onMount etc..
@@ -430,6 +358,72 @@ export class Component extends ProxyNode {
       if (i >= 0) this.paths.splice(i, 1)
     }
     super.runLifeCycleMethod(name, dom)
+  }
+}
+
+export const STATE = Symbol('state')
+
+/**
+ * Components provide local state
+ */
+
+export class Component extends SelfRerendering {
+  constructor(params, children) {
+    super()
+    this[STATE] = undefined
+    this.arguments = [params, children]
+  }
+  get state() {
+    return this[STATE]
+  }
+  set state(value) {
+    this[STATE] = value
+    this.requestRedraw()
+  }
+  toNode() {
+    return this.render(this.arguments[0], this.arguments[1], this.state)
+  }
+  update(next, dom) {
+    if (next instanceof Component) {
+      if (next[STATE] === undefined) next[STATE] = this[STATE]
+      next.paths = this.paths
+      return this.node.update(next.call(), dom)
+    }
+    return this.replace(next, dom)
+  }
+}
+
+/**
+ * An element which automatically re-renders its children
+ * when its state changes. It also wraps `state` in a cursor to
+ * make it easy for components to notify it when they manipulate the
+ * `state`
+ *
+ * @param {Any} state
+ * @param {Function} render
+ * @return {<div class='app'/>}
+ */
+
+export class App extends SelfRerendering {
+  constructor(state, render) {
+    super()
+    this.cursor = state instanceof RootCursor ? state : new RootCursor(state)
+    this.listener = () => this.requestRedraw()
+    this.render = render
+  }
+  toNode() {
+    return this.render(this.cursor)
+  }
+  onMount() {
+    this.cursor.addListener(this.listener)
+  }
+  onUnMount() {
+    this.cursor.removeListener(this.listener)
+  }
+  remove() {
+    for (const path of this.paths) {
+      super.remove(getDOM(path))
+    }
   }
 }
 
