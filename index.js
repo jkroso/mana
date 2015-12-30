@@ -264,6 +264,11 @@ export class Element extends Node {
   }
 }
 
+/**
+ * An abstract class for components which augment Elements or other
+ * ProxyNode's rather being a direct representation of a DOM node
+ */
+
 class ProxyNode extends Node {
   call() {
     return this.node ? this.node : this.node = this.toNode()
