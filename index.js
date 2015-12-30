@@ -327,6 +327,11 @@ export class Thunk extends ProxyNode {
   }
 }
 
+/**
+ * An abstract class for components which want to be able re-render all
+ * instances of themselves in place. The only required extension is toNode()
+ */
+
 class SelfRerendering extends ProxyNode {
   constructor() {
     super()
