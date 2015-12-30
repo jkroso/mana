@@ -417,7 +417,7 @@ export class Component extends ProxyNode {
       next.paths = this.paths
       return this.node.update(next.call(), dom)
     }
-    return this.node.update(next, dom)
+    return this.replace(next, dom)
   }
   // default hooks are inlined here so subclasses don't have to call
   // super.onMount etc..
