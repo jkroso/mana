@@ -2,11 +2,6 @@ import escapeHTML from 'escape-html'
 import {RootCursor} from 'cursor'
 import equals from 'equals'
 
-const self_closing = new Set([
-  'area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input',
-  'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'
-])
-
 export const NODE = Symbol('node')
 
 export class Node {
@@ -496,6 +491,11 @@ createElement.line =
 createElement.rect =
 createElement.path =
 createElement.g = createSVG
+
+const self_closing = new Set([
+  'area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input',
+  'keygen', 'link', 'meta', 'param', 'source', 'track', 'wbr'
+])
 
 // Hmm this is getting a bit long
 const attrWhiteList = [
