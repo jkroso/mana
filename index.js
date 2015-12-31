@@ -7,12 +7,18 @@ export const NODE = Symbol('node')
 export class Node {
   get id() { return this.params.id }
   remove(dom) {
+    this.runLifeCycleMethod('onUnMount', dom)
     dom.parentNode.removeChild(dom)
   }
-  replace(next, oldDom) {
-    const dom = next.toDOM()
-    oldDom.parentElement.replaceChild(dom, oldDom)
-    return dom
+  replace(next, dom) {
+    this.runLifeCycleMethod('onUnMount', dom)
+    const nextDOM = next.toDOM()
+    dom.parentElement.replaceChild(nextDOM, dom)
+    next.runLifeCycleMethod('onMount', nextDOM)
+    return nextDOM
+  }
+  runLifeCycleMethod(dom){
+    if (this[name]) this[name](dom)
   }
 }
 
@@ -34,7 +40,6 @@ export class Text extends Node {
   toString() {
     return this.text
   }
-  runLifeCycleMethod(){}
 }
 
 export class Element extends Node {
@@ -111,7 +116,7 @@ export class Element extends Node {
    */
 
   notify(type, data, dom) {
-    var fn = this.events[type]
+    const fn = this.events[type]
     fn && fn(data, this, dom)
   }
 
@@ -162,7 +167,7 @@ export class Element extends Node {
    */
 
   toDOM() {
-    var dom = typeof createElement[this.tagName] == 'function'
+    const dom = typeof createElement[this.tagName] == 'function'
       ? createElement[this.tagName](this.tagName)
       : document.createElement(this.tagName)
     adoptNewDOMElement(this, dom)
@@ -223,18 +228,6 @@ export class Element extends Node {
   updateEvents(events, dom) {
     if (events.mouseleave) dom.onmouseleave = notify
     if (events.mouseenter) dom.onmouseenter = notify
-  }
-
-  remove(dom) {
-    this.runLifeCycleMethod('onUnMount', dom)
-    super.remove(dom)
-  }
-
-  replace(next, dom) {
-    this.runLifeCycleMethod('onUnMount', dom)
-    dom = super.replace(next, dom)
-    next.runLifeCycleMethod('onMount', dom)
-    return dom
   }
 
   mount(el) {
@@ -480,7 +473,7 @@ const createSVG = tag => document.createElementNS('http://www.w3.org/2000/svg', 
 
 const createElement = {
   svg() {
-    var el = createSVG('svg')
+    const el = createSVG('svg')
     el.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
     el.setAttribute('version', '1.1')
     el.setAttribute('height', '100%')
