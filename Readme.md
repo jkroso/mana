@@ -42,7 +42,7 @@ IMHO TodoMVC doesn't ask enough of it's implementors be really useful. But it's 
 
 ##### [mana-map](//github.com/jkroso/mana-map)
 
-Demonstrates subclassing a "div" element and using lifecycle hooks to integrate with google maps. This could just as easily of been a subclass of `ProxyNode` but by subclassing `Element` instead I was able to hook into more specific parts of the `update()` method. Namely `updateParams()` and `updateChildren()`. Which makes a slightly more readable and slightly more efficient.
+Demonstrates subclassing a "div" element and using lifecycle hooks to integrate with google maps. This could just as easily of been a subclass of `ProxyNode` but by subclassing `Element` instead I was able to hook into more specific parts of the `update()` method. Namely `updateParams()` and `updateChildren()`. Which makes it a bit more readable and a bit more efficient.
 
 ##### [mana-async](//github.com/jkroso/mana-async)
 

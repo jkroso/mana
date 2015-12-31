@@ -404,14 +404,13 @@ export class Component extends SelfRerendering {
 }
 
 /**
- * An element which automatically re-renders its children
- * when its state changes. It also wraps `state` in a cursor to
- * make it easy for components to notify it when they manipulate the
- * `state`
+ * Designed to be the top level rendering loop manager. Just pass it
+ * some data and a function mapping that data to your UI. It wraps your
+ * data in a `Cursor` so it can tell when your data changes
  *
  * @param {Any} state
  * @param {Function} render
- * @return {<div class='app'/>}
+ * @return {Any}
  */
 
 export class App extends SelfRerendering {
