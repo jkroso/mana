@@ -4,7 +4,7 @@
   "description": "A virtual dom based framework which is as pretty as possible",
   "keywords": ["virtual dom","framework","UI"],
   "dependencies": {
-    "cursor": "jsiom/cursor",
+    "@jkroso/cursor": "0",
     "escape-html": "1",
     "equals": "1"
   },
@@ -16,7 +16,7 @@
     "hydro-bdd": "*",
     "hydro": "*"
   },
-  "transpile": [["*.js", "!sourcegraph/babel->js"]],
+  "transpile": [["*.js", "!sourcegraph/babel->js", {"stage": 0}]],
   "repository": "git://github.com/jkroso/mana.git",
   "author": "Jake Rosoman",
   "files": ["index.js"],

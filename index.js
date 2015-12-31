@@ -1,5 +1,5 @@
 import escapeHTML from 'escape-html'
-import {RootCursor} from 'cursor'
+import Cursor from '@jkroso/cursor'
 import equals from 'equals'
 
 export const NODE = Symbol('node')
@@ -294,6 +294,7 @@ class ProxyNode extends Node {
     const dom = this.toDOM()
     container.appendChild(dom)
     this.runLifeCycleMethod('onMount', dom)
+    return dom
   }
   runLifeCycleMethod(name, dom) {
     this.call().runLifeCycleMethod(name, dom)
@@ -409,7 +410,7 @@ export class Component extends SelfRerendering {
 export class App extends SelfRerendering {
   constructor(state, render) {
     super()
-    this.cursor = state instanceof RootCursor ? state : new RootCursor(state)
+    this.cursor = state instanceof Cursor ? state : new Cursor(state)
     this.listener = () => this.requestRedraw()
     this.render = render
   }

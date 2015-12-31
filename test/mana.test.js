@@ -32,16 +32,15 @@ describe('App', () => {
                        [new Text(cursor.value.user)],
                        {click: () => app.remove()})
   })
+  const dom = app.mountIn(document.body)
 
   it('mountIn', () => {
-    app.mountIn(document.body)
-    assert(app.dom.parentNode == document.body)
-    assert(app.dom.outerHTML == '<div class="name">jkroso</div>')
+    assert(dom.outerHTML == '<div class="name">jkroso</div>')
   })
 
   it('event dispatcher', () => {
-    app.dom.dispatchEvent(event('click'))
-    assert(app.dom.parentNode == null)
+    dom.dispatchEvent(event('click'))
+    assert(dom.parentNode == null)
   })
 })
 
@@ -111,12 +110,17 @@ describe('Problem areas', () => {
 
   describe('lifecycle hooks', () => {
     it('popping from the front of a list', () => {
-      let N = (params) => <div onUnMount={spy(() => null)}/>.mergeParams(params)
+      class N extends Element {
+        constructor(params) {
+          super('div', params)
+        }
+        onUnMount = spy(() => null)
+      }
       let UI1 = <div><N id="1"/><N id="2"/></div>
       let UI2 = <div><N id="2"/></div>
       let dom = UI1.toDOM()
       UI1.update(UI2, dom)
-      assert(UI1.children[0].events.unmount.callCount == 1)
+      assert(UI1.children[0].onUnMount.callCount == 1)
     })
   })
 })
