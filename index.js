@@ -62,7 +62,7 @@ export class Element extends Node {
   runLifeCycleMethod(name, dom) {
     const {children} = this
     for (let i = 0, len = children.length; i < len; i++) {
-      children[i].runLifeCycleMethod(name, dom.children[i])
+      children[i].runLifeCycleMethod(name, dom.childNodes[i])
     }
     if (this[name]) this[name](dom)
   }
