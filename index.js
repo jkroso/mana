@@ -602,7 +602,7 @@ export const JSX = (type, params, children) => {
     case 'object': // alter an existing instance
       return params ? type.assoc(params) : type
     default:
-      throw new TypeError
+      throw new TypeError(`${typeof type} isn't supported`)
   }
 }
 
