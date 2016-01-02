@@ -592,10 +592,16 @@ const serializeStyle = style => {
 
 export const JSX = (type, params, children) => {
   if (children) children = children.reduce(toNodes, [])
-  if (type.prototype instanceof Node) return new type(params, children)
-  return typeof type == 'string'
-    ? new Element(type, {}, children).mergeParams(params)
-    : type(params, children)
+  switch (typeof type) {
+    case 'string':
+      return new Element(type, {}, children).mergeParams(params)
+    case 'function':
+      return type.prototype instanceof Node
+        ? new type(params, children)
+        : type(params, children)
+    case 'object':
+      return params ? type.assoc(params) : type
+  }
 }
 
 const toNodes = (nodes, val) => {

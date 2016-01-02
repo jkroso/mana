@@ -59,6 +59,12 @@ describe('JSX', () => {
                JSX('h1', null, [JSX('a', {href:"#"}, ['a'])])))
     assert(eql(<ul>{['a', 'b', 'c']}</ul>,
                JSX('ul', null, ['a', 'b', 'c'])))
+    const thing = <a class="a"/>
+    assert(<thing/> === thing)
+    const thingb = <thing class="b"/>
+    assert(thingb !== thing)
+    assert(thing.params.className == "a")
+    assert(thingb.params.className == "a b")
   })
 })
 
