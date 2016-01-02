@@ -584,7 +584,7 @@ const serializeStyle = style => {
 /**
  * The runtime component of JSX
  *
- * @param  {String|Class|Function} type
+ * @param  {String|Class|Function|Object} type
  * @param  {Object} [params]
  * @param  {[Element]} [children]
  * @return {Element}
@@ -593,14 +593,16 @@ const serializeStyle = style => {
 export const JSX = (type, params, children) => {
   if (children) children = children.reduce(toNodes, [])
   switch (typeof type) {
-    case 'string':
+    case 'string': // built in type
       return new Element(type, {}, children).mergeParams(params)
-    case 'function':
+    case 'function': // invoke a class/function
       return type.prototype instanceof Node
         ? new type(params, children)
         : type(params, children)
-    case 'object':
+    case 'object': // alter an existing instance
       return params ? type.assoc(params) : type
+    default:
+      throw new TypeError
   }
 }
 
