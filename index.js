@@ -81,12 +81,12 @@ export class Element extends Node {
   }
 
   mergeParams(parameters) {
-    var params = this.params
+    const params = this.params
     for (var key in parameters) {
       var value = parameters[key]
       if (typeof value == 'function' && /^on\w+$/.test(key)) {
         this.listen(key.substring(2).toLowerCase(), value)
-      } else if (key == 'class') {
+      } else if (key == 'class' || key == 'className') {
         if (typeof value == 'string') {
           params.className = params.className
             ? params.className + ' ' + value

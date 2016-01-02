@@ -18,6 +18,13 @@ describe('Element', () => {
     assert(el.params.type == 'text')
   })
 
+  it('assoc()', () => {
+    const branch = el.assoc({className: 'd'})
+    assert(branch !== el)
+    assert(branch.params !== el.params)
+    assert(branch.params.className == 'a c d')
+  })
+
   it('toDOM()', () => {
     var dom = el.toDOM()
     assert(dom.className == 'a c')
