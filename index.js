@@ -5,7 +5,6 @@ import equals from 'equals'
 export const NODE = Symbol('node')
 
 export class Node {
-  get id() { return this.params.id }
   remove(dom) {
     this.runLifeCycleMethod('onUnMount', dom)
     dom.parentNode.removeChild(dom)
@@ -178,7 +177,6 @@ export class Element extends Node {
     if (this === next) return next
     if (this.constructor != next.constructor) return this.replace(next, dom)
     if (this.tagName != next.tagName) return this.replace(next, dom)
-    if (this.id !== next.id) return this.replace(next, dom)
     this.updateParams(next.params, dom)
     this.updateChildren(next.children, dom)
     this.updateEvents(next.events, dom)

@@ -120,7 +120,7 @@ describe('Problem areas', () => {
       let UI2 = <div><N id="2"/></div>
       let dom = UI1.toDOM()
       UI1.update(UI2, dom)
-      assert(UI1.children[0].onUnMount.callCount == 1)
+      assert(UI1.children[1].onUnMount.callCount == 1)
     })
   })
 })
