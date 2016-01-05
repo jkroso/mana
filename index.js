@@ -538,7 +538,7 @@ const attrWhiteList = [
   "stopOpacity", "strokeDasharray", "strokeDashoffset", "strokeLinecap", "strokeLinejoin",
   "strokeMiterlimit", "strokeOpacity", "strokeWidth", "stroke", "textAnchor", "textDecoration",
   "textRendering", "unicodeBidi", "visibility", "wordSpacing", "writingMode", "viewBox",
-  "contentEditable"
+  "contentEditable", "rel", "content"
 ].reduce((o,k) => {o[k] = true; return o}, {})
 
 /**
