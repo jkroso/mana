@@ -575,7 +575,7 @@ const serializeStyle = style => {
 
 const parseClassName = str =>
   str.split(' ').reduce((object, name) => {
-    object[name] = true
+    if (name != '') object[name] = true
     return object
   }, {})
 
