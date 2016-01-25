@@ -87,17 +87,8 @@ export class Element extends Node {
       if (typeof value == 'function' && /^on\w+$/.test(key)) {
         this.listen(key.substring(2).toLowerCase(), value)
       } else if (key == 'class' || key == 'className') {
-        if (typeof value == 'string') {
-          params.className = params.className
-            ? params.className + ' ' + value
-            : value
-          continue
-        }
-        for (key in value) if (value[key]) {
-          params.className = params.className
-            ? params.className + ' ' + key
-            : key
-        }
+        if (typeof value == 'string') value = parseClassName(value)
+        params.class = Object.assign(params.class || {}, value)
       } else if (key == 'style' && typeof value == 'string') {
         params.style = parseCSSText(value)
       } else {
@@ -187,13 +178,12 @@ export class Element extends Node {
   updateParams(b, dom) {
     const a = this.params
     for (var key in a) {
-      if (key in b) continue
-      if (key == 'className') dom.className = '' // browser bug workaround
-      else dom.removeAttribute(key)
+      key in b || dom.removeAttribute(key)
     }
 
     for (var key in b) {
-      if (a[key] != b[key]) setAttribute(dom, key, b[key])
+      if (key == 'class') updateClassList(dom.classList, a.class, b.class)
+      else if (a[key] != b[key]) setAttribute(dom, key, b[key])
     }
   }
 
@@ -558,9 +548,10 @@ const setAttribute = (el, key, value) => {
   } else if (key == 'value') {
     // often value has already updated itself
     if (el.value != value) el.value = value
-  } else if (key == 'className') {
-    if (typeof el.className == 'string') el.className = value // chrome bug
-    else el.classList.add(...value.split(' ')) // chrome SVG bug
+  } else if (key == 'class') {
+    for (key in value) {
+      el.classList.toggle(key, value[key])
+    }
   } else if (key in attrWhiteList) {
     if (typeof value == 'boolean') el[key] = value
     else el.setAttribute(key, value)
@@ -579,6 +570,17 @@ const serializeStyle = style => {
   var css = ''
   for (var key in style) css += `${key}:${style[key]};`
   return css
+}
+
+const parseClassName = str =>
+  str.split(' ').reduce((object, name) => {
+    object[name] = true
+    return object
+  }, {})
+
+const updateClassList = (list, a, b) => {
+  for (var key in a) key in b || list.remove(key)
+  for (var key in b) list.toggle(key, b[key])
 }
 
 /**
