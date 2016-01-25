@@ -183,6 +183,7 @@ export class Element extends Node {
 
     for (var key in b) {
       if (key == 'class') updateClassList(dom.classList, a.class, b.class)
+      else if (key == 'style') updateStyle(dom.style, a.style, b.style)
       else if (a[key] != b[key]) setAttribute(dom, key, b[key])
     }
   }
@@ -581,6 +582,11 @@ const parseClassName = str =>
 const updateClassList = (list, a, b) => {
   for (var key in a) key in b || list.remove(key)
   for (var key in b) list.toggle(key, b[key])
+}
+
+const updateStyle = (style, a, b) => {
+  for (var key in a) key in b || style.removeProperty(key)
+  for (var key in b) a[key] == b[key] || style.setProperty(key, b[key])
 }
 
 /**
