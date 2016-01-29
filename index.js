@@ -76,6 +76,8 @@ export class Element extends Node {
   assoc(params) {
     const clone = Object.create(this)
     clone.params = Object.create(this.params)
+    if (clone.params.class) clone.params.class = Object.create(this.params.class)
+    if (clone.params.style) clone.params.style = Object.create(this.params.style)
     clone.events = Object.create(this.events)
     return clone.mergeParams(params)
   }
@@ -236,8 +238,8 @@ export class Element extends Node {
     for (var key in this.params) {
       if (key in attrWhiteList) {
         var value = this.params[key]
-        if (key == 'className') key = 'class'
-        if (key == 'style') value = serializeStyle(value)
+        if (key == 'class')      value = serializeClass(value)
+        else if (key == 'style') value = serializeStyle(value)
         html += ` ${key}="${escapeHTML(value)}"`
       }
     }
@@ -529,7 +531,7 @@ const attrWhiteList = [
   "stopOpacity", "strokeDasharray", "strokeDashoffset", "strokeLinecap", "strokeLinejoin",
   "strokeMiterlimit", "strokeOpacity", "strokeWidth", "stroke", "textAnchor", "textDecoration",
   "textRendering", "unicodeBidi", "visibility", "wordSpacing", "writingMode", "viewBox",
-  "contentEditable", "rel", "content"
+  "contentEditable", "rel", "content", "class"
 ].reduce((o,k) => {o[k] = true; return o}, {})
 
 /**
@@ -566,6 +568,12 @@ const parseCSSText = css =>
     object[key.trim()] = value.trim()
     return object
   }, {})
+
+const serializeClass = classes => {
+  const className = []
+  for (var key in classes) classes[key] && className.push(key)
+  return className.join(' ')
+}
 
 const serializeStyle = style => {
   var css = ''

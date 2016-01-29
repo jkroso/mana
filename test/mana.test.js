@@ -1,5 +1,4 @@
 import {JSX,NODE,Text,Element,App} from '..'
-import {spy} from 'simple-spy'
 import event from 'dom-event'
 import assert from 'assert'
 
@@ -14,15 +13,15 @@ describe('Element', () => {
 
   it('mergeParams()', () => {
     assert(el.events.click == it)
-    assert(el.params.className == 'a c')
     assert(el.params.type == 'text')
+    assert.deepEqual(el.params.class, {a:true, b:false, c:true})
   })
 
   it('assoc()', () => {
     const branch = el.assoc({className: 'd'})
     assert(branch !== el)
     assert(branch.params !== el.params)
-    assert(branch.params.className == 'a c d')
+    assert.deepEqual(branch.params.class, {d:true})
   })
 
   it('toDOM()', () => {
@@ -42,7 +41,7 @@ describe('App', () => {
   const dom = app.mountIn(document.body)
 
   it('mountIn', () => {
-    assert(dom.outerHTML == '<div class="name">jkroso</div>')
+    assert(dom.outerHTML == '<div classname="name">jkroso</div>')
   })
 
   it('event dispatcher', () => {
@@ -66,8 +65,8 @@ describe('JSX', () => {
     assert(<thing/> === thing)
     const thingb = <thing class="b"/>
     assert(thingb !== thing)
-    assert(thing.params.className == "a")
-    assert(thingb.params.className == "a b")
+    assert.deepEqual(thing.params.class, {a: true})
+    assert.deepEqual(thingb.params.class, {b: true})
   })
 
   it('errors', () => {
@@ -78,7 +77,7 @@ describe('JSX', () => {
 
 describe('toString()', () => {
   it('no children', () => {
-    assert(<div class='a'/> == '<div class="a"></div>')
+    assert(<div class='a'/>.toString() == '<div class="a"></div>')
   })
 
   it('with children', () => {
@@ -131,17 +130,16 @@ describe('Problem areas', () => {
 
   describe('lifecycle hooks', () => {
     it('popping from the front of a list', () => {
+      var called = 0
       class N extends Element {
-        constructor(params) {
-          super('div', params)
-        }
-        onUnMount = spy(() => null)
+        constructor(params) { super('div', params) }
+        onUnMount() { called += 1 }
       }
       let UI1 = <div><N id="1"/><N id="2"/></div>
       let UI2 = <div><N id="2"/></div>
       let dom = UI1.toDOM()
       UI1.update(UI2, dom)
-      assert(UI1.children[1].onUnMount.callCount == 1)
+      assert(called == 1)
     })
   })
 })

@@ -11,7 +11,6 @@
   "devDependencies": {
     "dom-event": "jkroso/dom-event",
     "serve": "jkroso/serve",
-    "simple-spy": "1",
     "hydro-html": "*",
     "hydro-bdd": "*",
     "hydro": "*"
