@@ -6,7 +6,7 @@
   "dependencies": {
     "@jkroso/cursor": "0",
     "escape-html": "1",
-    "equals": "1"
+    "equals": "2"
   },
   "devDependencies": {
     "dom-event": "jkroso/dom-event",
