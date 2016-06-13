@@ -260,6 +260,9 @@ class ProxyNode extends Node {
   toDOM() {
     return this.call().toDOM()
   }
+  toString() {
+    return this.call().toString()
+  }
   remove(dom) {
     if (this.onUnMount) this.onUnMount(dom)
     return this.call().remove(dom)
