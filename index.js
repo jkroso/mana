@@ -16,7 +16,7 @@ export class Node {
     next.runLifeCycleMethod('onMount', nextDOM)
     return nextDOM
   }
-  runLifeCycleMethod(dom){
+  runLifeCycleMethod(dom) {
     if (this[name]) this[name](dom)
   }
 }
