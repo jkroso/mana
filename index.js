@@ -596,8 +596,8 @@ const updateClassList = (list, a, b) => {
 }
 
 const updateStyle = (style, a, b) => {
-  for (var key in a) key in b || style.removeProperty(key)
-  for (var key in b) a[key] == b[key] || style.setProperty(key, b[key])
+  for (var key in a) key in b || (style[key] = '')
+  for (var key in b) a[key] == b[key] || (style[key] = b[key])
 }
 
 /**
