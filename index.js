@@ -253,7 +253,7 @@ export class Element extends Node {
  * ProxyNode's rather being a direct representation of a DOM node
  */
 
-class ProxyNode extends Node {
+export class ProxyNode extends Node {
   call() {
     return this.node ? this.node : this.node = this.toNode()
   }
