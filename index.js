@@ -1,3 +1,4 @@
+import svgTagNames from 'svg-tag-names'
 import escapeHTML from 'escape-html'
 import Cursor from '@jkroso/cursor'
 import equals from 'equals'
@@ -477,15 +478,7 @@ const createElement = {
   }
 }
 
-createElement.polyline =
-createElement.ellipse =
-createElement.polygon =
-createElement.circle =
-createElement.text =
-createElement.line =
-createElement.rect =
-createElement.path =
-createElement.g = createSVG
+svgTagNames.forEach(tag => createElement[tag] = createSVG)
 
 const self_closing = new Set([
   'area', 'base', 'br', 'col', 'command', 'embed', 'hr', 'img', 'input',
